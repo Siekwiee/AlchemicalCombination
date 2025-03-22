@@ -1,0 +1,17 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+name: ecs-best-practices.mdc
+description: Best practices for Entity-Component System (ECS)
+globs: \*_/_.lua
+
+---
+
+- Keep entities lightweight, using only IDs or references
+- Separate game logic into systems for better modularity
+- Use component pools to reduce memory allocation and deallocation
+- Implement a caching system for frequently accessed components
+
+---

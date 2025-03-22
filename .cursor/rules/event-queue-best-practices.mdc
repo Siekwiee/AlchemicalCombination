@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+name: event-queue-best-practices.mdc
+description: Best practices for managing the event queue
+globs: \*_/_.lua
+
+---
+
+- Implement a buffer to handle event bursts and prevent system overload
+- Ensure thread-safe operations when accessing the event queue
+- Log and monitor event queue performance for optimization
+
+---
