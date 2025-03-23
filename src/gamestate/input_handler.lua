@@ -3,10 +3,21 @@
 ---@field handleKeyPress fun(self: InputHandler, gameState: GameState, key: string, scancode: string, isrepeat: boolean): boolean
 ---@field handleMousePress fun(self: InputHandler, gameState: GameState, x: number, y: number, button: number): boolean
 ---@field handleMouseRelease fun(self: InputHandler, gameState: GameState, x: number, y: number, button: number): boolean
+---@field handleMenuMousePress fun(self: InputHandler, gameState: GameState, x: number, y: number, button: number): boolean
+---@field handleOptionsMousePress fun(self: InputHandler, gameState: GameState, x: number, y: number, button: number): boolean
+---@field handlePlayingStateMousePress fun(self: InputHandler, gameState: GameState, x: number, y: number, button: number): boolean
+---@field handleGridClick fun(self: InputHandler, gameState: GameState, x: number, y: number, button: number): boolean
+---@field handleInventoryClick fun(self: InputHandler, gameState: GameState, x: number, y: number, button: number): boolean
+---@field handleMenuAction fun(self: InputHandler, gameState: GameState, action: string): void
+---@field isPointInGrid fun(self: InputHandler, gameState: GameState, x: number, y: number): boolean
+---@field isPointInInventory fun(self: InputHandler, gameState: GameState, x: number, y: number): boolean
+---@field getCellBounds fun(self: InputHandler, gameState: GameState, row: number, col: number): number, number, number, number
+---@field getCellCenterPosition fun(self: InputHandler, gameState: GameState, row: number, col: number): number, number
 -- Input handler module to handle all user input
 local InputHandler = {}
 
 -- Initialize a new input handler
+---@return InputHandler
 function InputHandler:new()
     local instance = {}
     setmetatable(instance, {__index = self})
@@ -14,6 +25,11 @@ function InputHandler:new()
 end
 
 -- Handle keyboard input
+---@param gameState GameState The current game state
+---@param key string The key that was pressed
+---@param scancode string The scancode of the key
+---@param isrepeat boolean Whether this is a key repeat event
+---@return boolean Whether the input was handled
 function InputHandler:handleKeyPress(gameState, key, scancode, isrepeat)
     if key == "escape" then
         if gameState.currentState == "playing" then
@@ -48,6 +64,11 @@ function InputHandler:handleKeyPress(gameState, key, scancode, isrepeat)
 end
 
 -- Handle mouse press
+---@param gameState GameState The current game state
+---@param x number Mouse X position
+---@param y number Mouse Y position
+---@param button number Mouse button that was pressed
+---@return boolean Whether the input was handled
 function InputHandler:handleMousePress(gameState, x, y, button)
     -- Handle based on current state
     if gameState.currentState == "menu" then
@@ -62,6 +83,11 @@ function InputHandler:handleMousePress(gameState, x, y, button)
 end
 
 -- Handle menu state mouse press
+---@param gameState GameState The current game state
+---@param x number Mouse X position
+---@param y number Mouse Y position
+---@param button number Mouse button that was pressed
+---@return boolean Whether the input was handled
 function InputHandler:handleMenuMousePress(gameState, x, y, button)
     if gameState.modes.menu then
         local action = gameState.modes.menu:handleMousePress(x, y, button)
@@ -74,6 +100,11 @@ function InputHandler:handleMenuMousePress(gameState, x, y, button)
 end
 
 -- Handle options state mouse press
+---@param gameState GameState The current game state
+---@param x number Mouse X position
+---@param y number Mouse Y position
+---@param button number Mouse button that was pressed
+---@return boolean Whether the input was handled
 function InputHandler:handleOptionsMousePress(gameState, x, y, button)
     if gameState.modes.options then
         local action = gameState.modes.options:handleMousePress(x, y, button)
@@ -86,6 +117,11 @@ function InputHandler:handleOptionsMousePress(gameState, x, y, button)
 end
 
 -- Handle mouse press during playing state
+---@param gameState GameState The current game state
+---@param x number Mouse X position
+---@param y number Mouse Y position
+---@param button number Mouse button that was pressed
+---@return boolean Whether the input was handled
 function InputHandler:handlePlayingStateMousePress(gameState, x, y, button)
     -- Check if click is in grid area
     if self:isPointInGrid(gameState, x, y) then
@@ -102,6 +138,11 @@ function InputHandler:handlePlayingStateMousePress(gameState, x, y, button)
 end
 
 -- Handle grid click
+---@param gameState GameState The current game state
+---@param x number Mouse X position
+---@param y number Mouse Y position
+---@param button number Mouse button that was pressed
+---@return boolean Whether the input was handled
 function InputHandler:handleGridClick(gameState, x, y, button)
     -- Convert to local grid coordinates
     local localX = x - gameState.gridX
@@ -162,14 +203,31 @@ function InputHandler:handleGridClick(gameState, x, y, button)
             gameState.visualization:showCombination(screenX, screenY, selectedElement, resultElement, resultElement)
         end
     elseif button == 2 then -- Right click
-        -- Clear selections
-        gameState.combinationGrid.selectedCell = nil
+        -- Use the CombinationGrid's removeElementToInventory function
+        local removed, elementName, centerX, centerY = gameState.combinationGrid:removeElementToInventory(localX, localY)
+        
+        -- If an element was removed, show visualization
+        if removed and elementName and gameState.visualization then
+            -- Convert local coordinates to screen coordinates
+            local screenX = gameState.gridX + centerX
+            local screenY = gameState.gridY + centerY
+            
+            -- Show element visualization effect
+            gameState.visualization:showElement(screenX, screenY, elementName)
+        end
+        
+        -- Clear selected inventory item
         gameState.selectedInventoryItem = nil
     end
     return true
 end
 
 -- Handle inventory click
+---@param gameState GameState The current game state
+---@param x number Mouse X position
+---@param y number Mouse Y position
+---@param button number Mouse button that was pressed
+---@return boolean Whether the input was handled
 function InputHandler:handleInventoryClick(gameState, x, y, button)
     if button == 1 then -- Left click
         -- Calculate the local inventory coordinates
@@ -198,6 +256,11 @@ function InputHandler:handleInventoryClick(gameState, x, y, button)
 end
 
 -- Handle mouse release
+---@param gameState GameState The current game state
+---@param x number Mouse X position
+---@param y number Mouse Y position
+---@param button number Mouse button that was released
+---@return boolean Whether the input was handled
 function InputHandler:handleMouseRelease(gameState, x, y, button)
     -- Handle based on current state
     if gameState.currentState == "menu" then
@@ -221,6 +284,8 @@ function InputHandler:handleMouseRelease(gameState, x, y, button)
 end
 
 -- Handle menu actions
+---@param gameState GameState The current game state
+---@param action string Action to perform
 function InputHandler:handleMenuAction(gameState, action)
     if action == "start_game" then
         gameState.currentState = "playing"
@@ -232,6 +297,10 @@ function InputHandler:handleMenuAction(gameState, action)
 end
 
 -- Check if a point is inside the grid
+---@param gameState GameState The current game state
+---@param x number Point X position
+---@param y number Point Y position
+---@return boolean Whether the point is inside the grid
 function InputHandler:isPointInGrid(gameState, x, y)
     local gridWidth = gameState.combinationGrid.columns * 
                      (gameState.combinationGrid.cellSize + gameState.combinationGrid.margin) + 
@@ -248,6 +317,10 @@ function InputHandler:isPointInGrid(gameState, x, y)
 end
 
 -- Check if a point is inside the inventory
+---@param gameState GameState The current game state
+---@param x number Point X position
+---@param y number Point Y position
+---@return boolean Whether the point is inside the inventory
 function InputHandler:isPointInInventory(gameState, x, y)
     return x >= gameState.inventoryX and 
            x < gameState.inventoryX + gameState.inventoryWidth and
@@ -256,6 +329,10 @@ function InputHandler:isPointInInventory(gameState, x, y)
 end
 
 -- Get the bounds of a cell
+---@param gameState GameState The current game state
+---@param row number Grid row
+---@param col number Grid column
+---@return number cellX, number cellY, number cellWidth, number cellHeight Cell bounds
 function InputHandler:getCellBounds(gameState, row, col)
     local cellX = (col - 1) * (gameState.combinationGrid.cellSize + gameState.combinationGrid.margin) + 
                   gameState.combinationGrid.margin
@@ -267,6 +344,10 @@ function InputHandler:getCellBounds(gameState, row, col)
 end
 
 -- Get cell center position
+---@param gameState GameState The current game state
+---@param row number Grid row
+---@param col number Grid column
+---@return number centerX, number centerY Cell center position
 function InputHandler:getCellCenterPosition(gameState, row, col)
     local cellX, cellY, cellWidth, cellHeight = self:getCellBounds(gameState, row, col)
     return cellX + cellWidth/2, cellY + cellHeight/2

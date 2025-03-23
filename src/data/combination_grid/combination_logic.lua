@@ -2,6 +2,7 @@
 ---@field applyTo fun(grid: CombinationGrid) Applies this module to a CombinationGrid instance
 ---@field combineElements fun(self: CombinationGrid, row1: number, col1: number, row2: number, col2: number): boolean Whether combination was successful
 ---@field getCombinationResult fun(self: CombinationGrid, element1: string, element2: string): string|nil The result element ID or nil if no result
+---@field findRecipeMatch fun(self: CombinationGrid, elements: table): string|nil Find a material that matches the provided recipe elements
 ---@field addElementFromInventory fun(self: CombinationGrid, elementName: string, row: number, col: number): boolean Whether addition was successful
 local CombinationLogic = {}
 
@@ -11,7 +12,59 @@ function CombinationLogic.applyTo(grid)
     -- Add all functions from this module to the grid
     grid.combineElements = CombinationLogic.combineElements
     grid.getCombinationResult = CombinationLogic.getCombinationResult
+    grid.findRecipeMatch = CombinationLogic.findRecipeMatch
     grid.addElementFromInventory = CombinationLogic.addElementFromInventory
+end
+
+---Find a material that matches the provided recipe elements
+---@param self CombinationGrid The CombinationGrid instance
+---@param elements table Map of element IDs to counts
+---@return string|nil resultElement The matching material ID or nil if no match
+function CombinationLogic.findRecipeMatch(self, elements)
+    -- Convert elements table to sorted array for consistent comparison
+    local elementPairs = {}
+    local elementCount = 0
+    
+    for element, count in pairs(elements) do
+        table.insert(elementPairs, {element = element, count = count})
+        elementCount = elementCount + count
+    end
+    
+    -- Look for matching recipes in materials
+    for materialId, materialData in pairs(self.materialData) do
+        -- Skip materials without recipes
+        if materialData.recipe then
+            -- Check if recipe matches our current elements
+            local matches = true
+            local recipeElementCount = 0
+            
+            -- Count recipe elements
+            for recipeElement, recipeCount in pairs(materialData.recipe) do
+                recipeElementCount = recipeElementCount + recipeCount
+                local found = false
+                
+                -- Look for this recipe element in our element set
+                for _, pair in ipairs(elementPairs) do
+                    if pair.element == recipeElement and pair.count >= recipeCount then
+                        found = true
+                        break
+                    end
+                end
+                
+                if not found then
+                    matches = false
+                    break
+                end
+            end
+            
+            -- If this is an exact match (same number of elements), return it
+            if matches and recipeElementCount == elementCount then
+                return materialId
+            end
+        end
+    end
+    
+    return nil
 end
 
 ---Combine two elements on the grid
@@ -49,14 +102,16 @@ function CombinationLogic.combineElements(self, row1, col1, row2, col2)
     
     print("Combining: " .. elementId1 .. " + " .. elementId2)
     
-    -- Check combination in both possible orders
-    local combinationKey1 = elementId1 .. "+" .. elementId2
-    local combinationKey2 = elementId2 .. "+" .. elementId1
+    -- Create a table of elements for recipe matching
+    local elementSet = {}
+    elementSet[elementId1] = 1
+    elementSet[elementId2] = 1
     
-    local resultElement = self.combinations[combinationKey1] or self.combinations[combinationKey2]
+    -- Find a material that has a recipe matching these elements
+    local resultElement = self:findRecipeMatch(elementSet)
     
     if resultElement then
-        print("Found combination! Result: " .. resultElement)
+        print("Found matching recipe! Result: " .. resultElement)
         
         -- Remove the original elements from the grid
         self.grid[row1][col1] = nil
@@ -79,12 +134,7 @@ function CombinationLogic.combineElements(self, row1, col1, row2, col2)
             return true
         end
     else
-        print("No combination found for: " .. combinationKey1 .. " or " .. combinationKey2)
-        -- Debug: print available combinations
-        print("Available combinations:")
-        for k, v in pairs(self.combinations) do
-            print(k .. " -> " .. v)
-        end
+        print("No matching recipe found for: " .. elementId1 .. " + " .. elementId2)
         return false
     end
 end
@@ -95,12 +145,13 @@ end
 ---@param element2 string Second element ID
 ---@return string|nil resultElement The result element ID or nil if no result
 function CombinationLogic.getCombinationResult(self, element1, element2)
-    -- Check combination in both possible orders
-    local combinationKey1 = element1 .. "+" .. element2
-    local combinationKey2 = element2 .. "+" .. element1
+    -- Create a table of elements for recipe matching
+    local elementSet = {}
+    elementSet[element1] = 1
+    elementSet[element2] = 1
     
-    local resultElement = self.combinations[combinationKey1] or self.combinations[combinationKey2]
-    return resultElement
+    -- Find a material that has a recipe matching these elements
+    return self:findRecipeMatch(elementSet)
 end
 
 ---Add an element from inventory to the grid

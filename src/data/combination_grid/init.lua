@@ -17,7 +17,6 @@ local GridHandlers = require("src.data.combination_grid.grid_handlers")
 ---@field selectedCell table|nil Currently selected cell {row, col}
 ---@field elements table Element data keyed by element id
 ---@field materialData table Material properties loaded from JSON
----@field combinations table Possible combinations between elements
 ---@field inventory Inventory|nil The player's inventory
 ---@field new fun(self: CombinationGrid, rows: number, columns: number): CombinationGrid Create a new CombinationGrid
 ---@field loadMaterials fun(self: CombinationGrid): boolean Load material data from JSON file
@@ -34,8 +33,10 @@ local GridHandlers = require("src.data.combination_grid.grid_handlers")
 ---@field handleClick fun(self: CombinationGrid, x: number, y: number): boolean, string|nil, number, number Handle a click on the grid
 ---@field handleInventoryClick fun(self: CombinationGrid, x: number, y: number, width: number, height: number): string|nil Handle a click on the inventory
 ---@field addElementFromInventory fun(self: CombinationGrid, elementName: string, row: number, col: number): boolean Add an element from inventory to the grid
+---@field removeElementToInventory fun(self: CombinationGrid, x: number, y: number): boolean, string|nil, number, number Remove an element from grid and add it to inventory
 ---@field combineElements fun(self: CombinationGrid, row1: number, col1: number, row2: number, col2: number): boolean Combine two elements on the grid
 ---@field getCombinationResult fun(self: CombinationGrid, element1: string, element2: string): string|nil Get the result of combining two elements
+---@field findRecipeMatch fun(self: CombinationGrid, elements: table): string|nil Find a material that matches the provided recipe elements
 local CombinationGrid = {
     rows = 0,
     columns = 0,
@@ -45,7 +46,6 @@ local CombinationGrid = {
     selectedCell = nil,
     elements = {},
     materialData = {},
-    combinations = {},
     inventory = nil
 }
 
@@ -63,7 +63,6 @@ function CombinationGrid:new(rows, columns)
     o.margin = 10
     o.selectedCell = nil
     o.materialData = {}
-    o.combinations = {}
     o.elements = {}
     
     -- Initialize inventory
@@ -90,7 +89,7 @@ function CombinationGrid:new(rows, columns)
     
     -- Explicitly define the addElementFromInventory method
     o.addElementFromInventory = GridHandlers.addElementFromInventory
-    
+
     return o
 end
 
@@ -122,14 +121,13 @@ function CombinationGrid:loadMaterials()
     end
     
     -- Validate data structure
-    if not jsonData.materials or not jsonData.combinations then
-        error("Error: Invalid materials.json structure (missing materials or combinations)")
+    if not jsonData.materials then
+        error("Error: Invalid materials.json structure (missing materials)")
         return false
     end
     
     -- Store the data
     self.materialData = jsonData.materials
-    self.combinations = jsonData.combinations
     
     -- Initialize elements data using materialData
     for elementId, elementData in pairs(self.materialData) do
@@ -144,7 +142,7 @@ function CombinationGrid:loadMaterials()
     self.inventory:addItem("water", 3)
     self.inventory:addItem("earth", 3)
     self.inventory:addItem("air", 3)
-    
+
     print("Materials loaded successfully")
     return true
 end

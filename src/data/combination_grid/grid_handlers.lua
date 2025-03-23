@@ -3,6 +3,7 @@
 ---@field handleClick fun(self: CombinationGrid, x: number, y: number): boolean, string|nil, number, number Whether a combination occurred, result element, centerX, centerY
 ---@field handleInventoryClick fun(self: CombinationGrid, x: number, y: number, width: number, height: number): string|nil Selected element or nil
 ---@field addElementFromInventory fun(self: CombinationGrid, elementName: string, row: number, col: number): boolean Whether the element was added
+---@field removeElementToInventory fun(self: CombinationGrid, x: number, y: number): boolean, string|nil, number, number Whether element was removed, element name, centerX, centerY
 local GridHandlers = {}
 
 ---Apply this module to a CombinationGrid instance
@@ -11,6 +12,7 @@ function GridHandlers.applyTo(grid)
     -- Add all functions from this module to the grid
     grid.handleClick = GridHandlers.handleClick
     grid.handleInventoryClick = GridHandlers.handleInventoryClick
+    grid.removeElementToInventory = GridHandlers.removeElementToInventory
 end
 
 ---Handle a click on the grid
@@ -75,8 +77,13 @@ function GridHandlers.handleClick(self, x, y)
                         return false, nil, cellX + self.cellSize/2, cellY + self.cellSize/2
                     end
                     
-                    -- Try both ordering (element1 + element2 and element2 + element1)
-                    local resultElement = self:getCombinationResult(element1, element2)
+                    -- Create a set of elements for recipe matching
+                    local elementSet = {}
+                    elementSet[element1] = 1
+                    elementSet[element2] = 1
+                    
+                    -- Try to find a matching recipe
+                    local resultElement = self:findRecipeMatch(elementSet)
                     
                     if resultElement then
                         -- Success! Replace the elements with the result
@@ -92,7 +99,7 @@ function GridHandlers.handleClick(self, x, y)
                         return true, resultElement, cellX + self.cellSize/2, cellY + self.cellSize/2
                     else
                         -- Invalid combination, just clear selection
-                        print("Cannot combine " .. element1 .. " + " .. element2)
+                        print("Cannot combine " .. element1 .. " + " .. element2 .. " - no matching recipe")
                         self.selectedCell = nil
                         
                         -- Return false as no combination occurred
@@ -179,6 +186,56 @@ function GridHandlers.addElementFromInventory(self, elementName, row, col)
     
     print("Placed " .. elementName .. " from inventory to grid at " .. row .. "," .. col)
     return true
+end
+
+---Remove an element from the grid and add it to inventory
+---@param self CombinationGrid The CombinationGrid instance
+---@param x number Click X position
+---@param y number Click Y position
+---@return boolean success Whether an element was removed
+---@return string|nil elementName The removed element name or nil
+---@return number centerX The center X of the clicked cell
+---@return number centerY The center Y of the clicked cell
+function GridHandlers.removeElementToInventory(self, x, y)
+    -- Calculate which grid cell was clicked
+    for row = 1, self.rows do
+        for col = 1, self.columns do
+            local cellX = (col - 1) * (self.cellSize + self.margin) + self.margin
+            local cellY = (row - 1) * (self.cellSize + self.margin) + self.margin
+            
+            -- Check if click is within this cell
+            if x >= cellX and x < cellX + self.cellSize and 
+               y >= cellY and y < cellY + self.cellSize then
+                
+                -- Check if there's an element in this cell
+                local cellData = self.grid[row][col]
+                if cellData and cellData.element then
+                    -- Add the element to inventory
+                    self.inventory:addItem(cellData.element, 1)
+                    
+                    -- Get element name before removing it
+                    local elementName = cellData.element
+                    
+                    -- Remove the element from the grid
+                    self.grid[row][col] = nil
+                    
+                    -- Clear selection if this was the selected cell
+                    if self.selectedCell and self.selectedCell.row == row and self.selectedCell.col == col then
+                        self.selectedCell = nil
+                    end
+                    
+                    print("Moved " .. elementName .. " from grid to inventory")
+                    return true, elementName, cellX + self.cellSize/2, cellY + self.cellSize/2
+                end
+                
+                -- Return cell center position even if no element was found
+                return false, nil, cellX + self.cellSize/2, cellY + self.cellSize/2
+            end
+        end
+    end
+    
+    -- No cell was clicked or no element was found
+    return false, nil, x, y
 end
 
 return GridHandlers 

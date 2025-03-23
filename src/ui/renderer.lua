@@ -22,7 +22,7 @@ function Renderer:drawGameUI(gameState)
     
     -- Draw gold counter if available
     if gameState.combinationGrid and gameState.combinationGrid.inventory then
-        UI.GoldCounter:draw(gameState.combinationGrid.inventory.gold)
+        UI.GoldCounter:draw(gameState.combinationGrid.inventory:getGold())
     end
     
     -- Calculate positions
