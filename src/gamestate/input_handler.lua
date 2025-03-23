@@ -8,7 +8,7 @@
 ---@field handlePlayingStateMousePress fun(self: InputHandler, gameState: GameState, x: number, y: number, button: number): boolean
 ---@field handleGridClick fun(self: InputHandler, gameState: GameState, x: number, y: number, button: number): boolean
 ---@field handleInventoryClick fun(self: InputHandler, gameState: GameState, x: number, y: number, button: number): boolean
----@field handleMenuAction fun(self: InputHandler, gameState: GameState, action: string): void
+---@field handleMenuAction fun(self: InputHandler, gameState: GameState, action: string): nil
 ---@field isPointInGrid fun(self: InputHandler, gameState: GameState, x: number, y: number): boolean
 ---@field isPointInInventory fun(self: InputHandler, gameState: GameState, x: number, y: number): boolean
 ---@field getCellBounds fun(self: InputHandler, gameState: GameState, row: number, col: number): number, number, number, number

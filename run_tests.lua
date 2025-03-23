@@ -47,8 +47,9 @@ end
 
 -- Main function
 local function main()
-    print("Alchemy Factory Test Runner")
-    print(separator)
+    print("\n\n" .. separator)
+    print("  ALCHEMY FACTORY TEST RUNNER")
+    print(separator .. "\n")
     
     local testFiles = getTestFiles(testDir)
     
@@ -73,19 +74,24 @@ local function main()
     end
     
     print(separator)
-    print("Test Results:")
-    print("Passed: " .. passed)
-    print("Failed: " .. failed)
+    print("TEST RESULTS:")
+    print(separator)
     
-    if failed > 0 then
-        print("\nFailed tests:")
-        for _, file in ipairs(failedTests) do
-            print("  - " .. file)
-        end
-        os.exit(1)
+    if passed > 0 then
+        print("PASSED: " .. passed .. " test" .. (passed == 1 and "" or "s"))
     end
     
-    print("\nAll tests passed!")
+    if failed > 0 then
+        print("FAILED: " .. failed .. " test" .. (failed == 1 and "" or "s"))
+        print("\nFailed tests:")
+        for i, file in ipairs(failedTests) do
+            print("  " .. i .. ". " .. file)
+        end
+        os.exit(1)
+    else
+        print("\nALL TESTS PASSED!")
+    end
+    
     os.exit(0)
 end
 

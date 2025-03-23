@@ -1,0 +1,58 @@
+{
+  "available_items": {
+    "Baisc Items": {
+      "fire": {
+        "description": "Basic element of heat and combustion",
+        "price": 5
+      },
+      "water": {
+        "description": "Basic element of fluidity and life",
+        "price": 5
+      },
+      "earth": {
+        "description": "Basic element of solidity and stability",
+        "price": 5
+      },
+      "air": {
+        "description": "Basic element of movement and breath",
+        "price": 5
+      }
+    },
+    "others": {
+      "Seed": {
+        "description": "needed for Plant recipe:",
+        "price": 10
+      }
+    }
+  },
+  "locked_items": {
+    "default": {
+      "description": "You need to unlock this item first",
+      "price": 0
+    }
+  },
+  "sellable_items": {
+    "gold": {
+      "name": "Gold",
+      "tier": 3,
+      "color": [1, 0.84, 0],
+      "description": "A precious metal refined through alchemy",
+      "value": 100,
+      "recipe": {
+        "metal": 1,
+        "fire": 1
+      }
+    },
+    "metal": {
+      "name": "Metal",
+      "tier": 2,
+      "color": [0.7, 0.7, 0.7],
+      "description": "Forged from fire and earth",
+      "value": 25,
+      "recipe": {
+        "fire": 1,
+        "earth": 1
+      }
+    }
+  }
+}
