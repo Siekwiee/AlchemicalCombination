@@ -1,6 +1,7 @@
 local love = require("love")
 local UI = require("src.ui")
 
+
 local MainMenu = {
     buttons = {},
     selectedButton = 1,
@@ -90,7 +91,7 @@ function MainMenu:draw()
     love.graphics.setFont(UI.fonts.large)
     
     -- Draw title
-    local title = "Unnamed Idle Game"
+    local title = "Alchemy Factory"
     local titleX, titleY = UI:centerText(title, self.buttons[1].y - 100, UI.fonts.large)
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(title, titleX, titleY)

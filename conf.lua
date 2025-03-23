@@ -4,7 +4,7 @@ function love.conf(t)
     t.version = "11.4"                           -- LÖVE version
 
     -- Window configuration
-    t.window.title = "Unnamed Idle Game"         -- Window title
+    t.window.title = "Alchemy Factory"         -- Window title
     t.window.width = 1920                        -- Window width (changed from 800)
     t.window.height = 1080                       -- Window height (changed from 600)
     t.window.resizable = true                    -- Make window resizable

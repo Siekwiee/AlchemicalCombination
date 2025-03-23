@@ -1,0 +1,105 @@
+{
+  "materials": {
+    "fire": {
+      "name": "Fire",
+      "tier": 1,
+      "color": [1, 0.2, 0.2],
+      "description": "Basic element of heat and combustion",
+      "value": 10
+    },
+    "water": {
+      "name": "Water",
+      "tier": 1,
+      "color": [0.2, 0.2, 1],
+      "description": "Basic element of fluidity and life",
+      "value": 10
+    },
+    "earth": {
+      "name": "Earth",
+      "tier": 1,
+      "color": [0.6, 0.4, 0.2],
+      "description": "Basic element of solidity and stability",
+      "value": 10
+    },
+    "air": {
+      "name": "Air",
+      "tier": 1,
+      "color": [0.9, 0.9, 1],
+      "description": "Basic element of movement and breath",
+      "value": 10
+    },
+    "metal": {
+      "name": "Metal",
+      "tier": 2,
+      "color": [0.7, 0.7, 0.7],
+      "description": "Forged from fire and earth",
+      "value": 25
+    },
+    "steam": {
+      "name": "Steam",
+      "tier": 2,
+      "color": [0.8, 0.8, 0.9],
+      "description": "Created when fire meets water",
+      "value": 25
+    },
+    "mud": {
+      "name": "Mud",
+      "tier": 2,
+      "color": [0.5, 0.3, 0.1],
+      "description": "Formed when water mixes with earth",
+      "value": 25
+    },
+    "dust": {
+      "name": "Dust",
+      "tier": 2,
+      "color": [0.8, 0.7, 0.6],
+      "description": "Produced when air erodes earth",
+      "value": 25
+    },
+    "gold": {
+      "name": "Gold",
+      "tier": 3,
+      "color": [1, 0.84, 0],
+      "description": "A precious metal refined through alchemy",
+      "value": 100
+    },
+    "crystal": {
+      "name": "Crystal",
+      "tier": 3,
+      "color": [0.8, 0.9, 1],
+      "description": "Formed under pressure from earth and water",
+      "value": 80
+    },
+    "plant": {
+      "name": "Plant",
+      "tier": 2,
+      "color": [0.2, 0.8, 0.2],
+      "description": "Grows from earth with waters nurturing",
+      "value": 30
+    },
+    "magic_essence": {
+      "name": "Magic Essence",
+      "tier": 4,
+      "color": [0.8, 0.2, 0.8],
+      "description": "Pure magical energy distilled from elements",
+      "value": 200
+    }
+  },
+
+  "combinations": {
+    "fire+earth": "metal",
+    "earth+fire": "metal",
+    "fire+water": "steam",
+    "water+fire": "steam",
+    "water+earth": "mud",
+    "earth+water": "mud",
+    "air+earth": "dust",
+    "earth+air": "dust",
+    "metal+fire": "gold",
+    "fire+metal": "gold",
+    "earth+metal": "crystal",
+    "metal+earth": "crystal",
+    "crystal+fire": "magic_essence",
+    "fire+crystal": "magic_essence"
+  }
+}
