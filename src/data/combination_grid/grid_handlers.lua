@@ -7,7 +7,7 @@
 local GridHandlers = {}
 
 ---Apply this module to a CombinationGrid instance
----@param grid table The CombinationGrid instance
+---@param grid CombinationGrid The CombinationGrid instance
 function GridHandlers.applyTo(grid)
     -- Add all functions from this module to the grid
     grid.handleClick = GridHandlers.handleClick
@@ -34,76 +34,109 @@ function GridHandlers.handleClick(self, x, y)
             if x >= cellX and x < cellX + self.cellSize and 
                y >= cellY and y < cellY + self.cellSize then
                 
-                -- Check if this is the first selection
+                -- Calculate cell center for return values
+                ---@type number, number
+                local centerX, centerY = cellX + self.cellSize/2, cellY + self.cellSize/2
+                
+                -- STEP 1: Handle first selection (select an element)
                 if not self.selectedCell then
                     -- Only select cells with elements
                     if self.grid[row][col] then
+                        ---@type {row: number, col: number}
                         self.selectedCell = {row = row, col = col}
-                        print("Selected cell " .. row .. "," .. col .. " with element " .. tostring(self.grid[row][col]))
+                        print("Selected cell " .. row .. "," .. col .. " with element " .. tostring(self.grid[row][col].element))
                     end
                     
                     -- Return false as no combination occurred
-                    return false, nil, cellX + self.cellSize/2, cellY + self.cellSize/2
+                    return false, nil, centerX, centerY
                 else
-                    -- This is the second selection, try to combine
-                    local selectedRow = self.selectedCell.row
-                    local selectedCol = self.selectedCell.col
+                    -- STEP 2: Handle second selection (combine elements)
+                    ---@type number, number
+                    local selectedRow, selectedCol = self.selectedCell.row, self.selectedCell.col
                     
                     -- Can't combine with itself
                     if selectedRow == row and selectedCol == col then
                         self.selectedCell = nil
-                        return false, nil, cellX + self.cellSize/2, cellY + self.cellSize/2
+                        return false, nil, centerX, centerY
                     end
                     
-                    -- Ensure both cells have elements
-                    if not self.grid[selectedRow][selectedCol] or not self.grid[row][col] then
-                        if not self.grid[row][col] then
+                    -- STEP 3: Ensure both cells have elements
+                    ---@type GridCell|nil
+                    local firstCell = self.grid[selectedRow][selectedCol]
+                    ---@type GridCell|nil
+                    local secondCell = self.grid[row][col]
+                    
+                    if not firstCell or not secondCell then
+                        if not secondCell then
                             -- If second cell is empty, move the element there
                             self.grid[row][col] = self.grid[selectedRow][selectedCol]
                             self.grid[selectedRow][selectedCol] = nil
                         end
                         
                         self.selectedCell = nil
-                        return false, nil, cellX + self.cellSize/2, cellY + self.cellSize/2
+                        return false, nil, centerX, centerY
                     end
                     
-                    -- Try to combine the elements
-                    local element1 = self.grid[selectedRow][selectedCol].element
-                    local element2 = self.grid[row][col].element
+                    -- STEP 4: Try to combine the elements
+                    ---@type string|nil
+                    local element1 = firstCell.element
+                    ---@type string|nil
+                    local element2 = secondCell.element
                     
                     if not element1 or not element2 then
                         print("Element data is incomplete")
                         self.selectedCell = nil
-                        return false, nil, cellX + self.cellSize/2, cellY + self.cellSize/2
+                        return false, nil, centerX, centerY
                     end
                     
-                    -- Create a set of elements for recipe matching
-                    local elementSet = {}
-                    elementSet[element1] = 1
-                    elementSet[element2] = 1
+                    -- STEP 5: Use the combination logic function to handle the combination
+                    local success = false
+                    local resultElement = nil
                     
-                    -- Try to find a matching recipe
-                    local resultElement = self:findRecipeMatch(elementSet)
+                    -- Try using combineElements which handles special combinations
+                    if self.combineElements then
+                        success = self:combineElements(selectedRow, selectedCol, row, col)
+                        
+                        if success then
+                            -- If a special combination was successful, find out what the result was
+                            if self.grid[row][col] and self.grid[row][col].element then
+                                resultElement = self.grid[row][col].element
+                            end
+                            
+                            print("Combination successful: " .. element1 .. " + " .. element2)
+                        end
+                    else
+                        -- Fallback to direct recipe matching if combineElements isn't available
+                        -- Create a set of elements for recipe matching
+                        ---@type {[string]: number}
+                        local elementSet = {}
+                        elementSet[element1] = 1
+                        elementSet[element2] = 1
+                        
+                        -- Try to find a matching recipe
+                        resultElement = self:findRecipeMatch(elementSet)
+                        
+                        if resultElement then
+                            -- Success! Replace the elements with the result
+                            ---@type GridCell
+                            self.grid[row][col] = {element = resultElement}
+                            self.grid[selectedRow][selectedCol] = nil
+                            success = true
+                            
+                            print("Combined " .. element1 .. " + " .. element2 .. " = " .. resultElement)
+                        end
+                    end
                     
-                    if resultElement then
-                        -- Success! Replace the elements with the result
-                        self.grid[row][col] = {element = resultElement}
-                        self.grid[selectedRow][selectedCol] = nil
-                        
-                        print("Combined " .. element1 .. " + " .. element2 .. " = " .. resultElement)
-                        
-                        -- Clear selection
-                        self.selectedCell = nil
-                        
-                        -- Return true as a combination occurred, with the result element and cell center position
-                        return true, resultElement, cellX + self.cellSize/2, cellY + self.cellSize/2
+                    -- Clear selection
+                    self.selectedCell = nil
+                    
+                    if success then
+                        -- Return true as a combination occurred
+                        return true, resultElement, centerX, centerY
                     else
                         -- Invalid combination, just clear selection
                         print("Cannot combine " .. element1 .. " + " .. element2 .. " - no matching recipe")
-                        self.selectedCell = nil
-                        
-                        -- Return false as no combination occurred
-                        return false, nil, cellX + self.cellSize/2, cellY + self.cellSize/2
+                        return false, nil, centerX, centerY
                     end
                 end
             end
@@ -129,19 +162,27 @@ function GridHandlers.handleInventoryClick(self, x, y, width, height)
     end
     
     -- Rendering parameters
-    local itemSize = 60
-    local margin = 10
+    ---@type number, number
+    local itemSize, margin = 60, 10
     
     -- Get inventory items with counts > 0
+    ---@type string[]
     local inventoryKeys = self:getInventoryKeys()
+    ---@type number
     local startX = (width - (#inventoryKeys * (itemSize + margin))) / 2
     
     -- Debug
     print("Inventory click at local: (" .. x .. "," .. y .. "), items start at x=" .. startX)
     
+    -- Check each inventory item
+    ---@type number
     local index = 0
-    for elementId, count in pairs(self.inventory:getItems()) do
+    ---@type {[string]: number}
+    local items = self.inventory:getItems()
+    
+    for elementId, count in pairs(items) do
         if count > 0 then
+            ---@type number
             local itemX = startX + index * (itemSize + margin)
             
             -- Check if click is within this item's area
@@ -173,12 +214,15 @@ function GridHandlers.addElementFromInventory(self, elementName, row, col)
     end
     
     -- Check if we have this element in inventory
-    if self.inventory:getItemCount(elementName) <= 0 then
+    ---@type number
+    local itemCount = self.inventory:getItemCount(elementName)
+    if itemCount <= 0 then
         print("Cannot place element - not in inventory")
         return false
     end
     
     -- Place the element
+    ---@type GridCell
     self.grid[row][col] = {element = elementName}
     
     -- Remove from inventory
@@ -200,20 +244,27 @@ function GridHandlers.removeElementToInventory(self, x, y)
     -- Calculate which grid cell was clicked
     for row = 1, self.rows do
         for col = 1, self.columns do
+            ---@type number, number
             local cellX = (col - 1) * (self.cellSize + self.margin) + self.margin
             local cellY = (row - 1) * (self.cellSize + self.margin) + self.margin
+            
+            -- Calculate cell center for return values
+            ---@type number, number
+            local centerX, centerY = cellX + self.cellSize/2, cellY + self.cellSize/2
             
             -- Check if click is within this cell
             if x >= cellX and x < cellX + self.cellSize and 
                y >= cellY and y < cellY + self.cellSize then
                 
                 -- Check if there's an element in this cell
+                ---@type GridCell|nil
                 local cellData = self.grid[row][col]
                 if cellData and cellData.element then
                     -- Add the element to inventory
                     self.inventory:addItem(cellData.element, 1)
                     
                     -- Get element name before removing it
+                    ---@type string
                     local elementName = cellData.element
                     
                     -- Remove the element from the grid
@@ -225,11 +276,11 @@ function GridHandlers.removeElementToInventory(self, x, y)
                     end
                     
                     print("Moved " .. elementName .. " from grid to inventory")
-                    return true, elementName, cellX + self.cellSize/2, cellY + self.cellSize/2
+                    return true, elementName, centerX, centerY
                 end
                 
                 -- Return cell center position even if no element was found
-                return false, nil, cellX + self.cellSize/2, cellY + self.cellSize/2
+                return false, nil, centerX, centerY
             end
         end
     end

@@ -6,6 +6,7 @@ local Instruction = require("src.ui.instruction")
 local FPSCounter = require("src.ui.fps_counter")
 local GoldCounter = require("src.ui.gold_counter")
 local GridLayout = require("src.ui.grid_layout")
+local Checkbox = require("src.ui.checkbox")
 
 local UI = {
     Button = Button,
@@ -13,7 +14,8 @@ local UI = {
     Instruction = Instruction,
     FPSCounter = FPSCounter,
     GoldCounter = GoldCounter,
-    GridLayout = GridLayout
+    GridLayout = GridLayout,
+    Checkbox = Checkbox
 }
 
 function UI:init()

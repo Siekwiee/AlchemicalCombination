@@ -48,7 +48,8 @@
       "recipe": {
         "fire": 1,
         "water": 1
-      }
+      },
+      "random_drops": [{ "item": "water", "chance": 1 }]
     },
     "mud": {
       "name": "Mud",
@@ -81,7 +82,8 @@
       "recipe": {
         "metal": 1,
         "fire": 1
-      }
+      },
+      "random_drops": [{ "item": "gold", "chance": 0.01 }]
     },
     "crystal": {
       "name": "Crystal",
@@ -92,7 +94,8 @@
       "recipe": {
         "earth": 1,
         "metal": 1
-      }
+      },
+      "random_drops": [{ "item": "dust", "chance": 0.05 }]
     },
     "seed": {
       "name": "Seed",
@@ -124,7 +127,11 @@
       "recipe": {
         "crystal": 1,
         "fire": 1
-      }
+      },
+      "random_drops": [
+        { "item": "crystal", "chance": 0.03 },
+        { "item": "gold", "chance": 0.02 }
+      ]
     }
   }
 }

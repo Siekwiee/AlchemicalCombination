@@ -177,4 +177,71 @@ function json.decode(str)
     return result
 end
 
+-- Encode Lua value to JSON
+local function encodeValue(val)
+    local valType = type(val)
+    
+    if val == nil then
+        return "null"
+    elseif valType == "number" then
+        return tostring(val)
+    elseif valType == "boolean" then
+        return val and "true" or "false"
+    elseif valType == "string" then
+        return '"' .. val:gsub('"', '\\"'):gsub('\n', '\\n'):gsub('\r', '\\r'):gsub('\t', '\\t') .. '"'
+    elseif valType == "table" then
+        -- Check if it's an array (consecutive numeric keys)
+        local isArray = true
+        local maxIndex = 0
+        
+        for k, v in pairs(val) do
+            if type(k) ~= "number" or k < 1 or math.floor(k) ~= k then
+                isArray = false
+                break
+            end
+            maxIndex = math.max(maxIndex, k)
+        end
+        
+        local result
+        
+        if isArray and maxIndex > 0 then
+            -- It's an array
+            result = "["
+            for i=1, maxIndex do
+                if i > 1 then
+                    result = result .. ","
+                end
+                result = result .. encodeValue(val[i])
+            end
+            result = result .. "]"
+        else
+            -- It's an object
+            result = "{"
+            local first = true
+            for k, v in pairs(val) do
+                if not first then
+                    result = result .. ","
+                end
+                first = false
+                result = result .. '"' .. tostring(k) .. '":' .. encodeValue(v)
+            end
+            result = result .. "}"
+        end
+        
+        return result
+    else
+        error("Cannot encode value of type " .. valType)
+    end
+end
+
+function json.encode(val)
+    local success, result = pcall(encodeValue, val)
+    
+    if not success then
+        error("JSON encode error: " .. result)
+    end
+    
+    return result
+end
+
 return json 

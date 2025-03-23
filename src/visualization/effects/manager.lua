@@ -3,6 +3,7 @@ local FlashEffect = require("src.visualization.effects.flash")
 local FadeEffect = require("src.visualization.effects.fade")
 local CombinationEffect = require("src.visualization.effects.combination")
 local ElementEffect = require("src.visualization.effects.element")
+local TextEffect = require("src.visualization.effects.text")
 
 -- Effects manager module
 local EffectsManager = {}
@@ -34,8 +35,8 @@ function EffectsManager:createFade(x, y, color, duration, size)
 end
 
 -- Create a combination effect
-function EffectsManager:createCombinationEffect(x, y, duration)
-    CombinationEffect:create(self, x, y, duration)
+function EffectsManager:createCombinationEffect(x, y, duration, isLucky, luckyItemName)
+    CombinationEffect:create(self, x, y, duration, isLucky, luckyItemName)
     return #self.activeEffects
 end
 
@@ -45,18 +46,35 @@ function EffectsManager:createElementEffect(x, y, elementType, duration)
     return #self.activeEffects
 end
 
+-- Create a text effect
+function EffectsManager:createTextEffect(x, y, text, color, duration)
+    local effect = TextEffect:create(x, y, text, color, duration)
+    return self:addEffect(effect)
+end
+
 -- Update all effects
 function EffectsManager:update(dt)
     local i = 1
     while i <= #self.activeEffects do
         local effect = self.activeEffects[i]
         
-        effect.duration = effect.duration - dt
-        
-        if effect.duration <= 0 then
-            table.remove(self.activeEffects, i)
+        if effect.update then
+            -- Some effects have their own update method
+            effect:update(dt)
+            if effect.isComplete and effect:isComplete() then
+                table.remove(self.activeEffects, i)
+            else
+                i = i + 1
+            end
         else
-            i = i + 1
+            -- Simple duration-based effects
+            effect.duration = effect.duration - dt
+            
+            if effect.duration <= 0 then
+                table.remove(self.activeEffects, i)
+            else
+                i = i + 1
+            end
         end
     end
 end
@@ -70,6 +88,10 @@ function EffectsManager:draw()
             FlashEffect:draw(effect)
         elseif effect.type == "fade" then
             FadeEffect:draw(effect)
+        elseif effect.draw and not (effect.type == "flash" or effect.type == "fade") then
+            -- Handle effects with their own draw method (like TextEffect)
+            -- but don't double-draw flash or fade effects
+            effect:draw()
         end
         
         love.graphics.setColor(originalColor)

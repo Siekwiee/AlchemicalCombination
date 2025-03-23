@@ -15,6 +15,7 @@
 ---@field getCellCenterPosition fun(self: InputHandler, gameState: GameState, row: number, col: number): number, number
 -- Input handler module to handle all user input
 local InputHandler = {}
+local Config = require("src.gamestate.config")
 
 -- Initialize a new input handler
 ---@return InputHandler
@@ -150,8 +151,11 @@ function InputHandler:handleGridClick(gameState, x, y, button)
     
     print("Converting grid click: global(" .. x .. "," .. y .. ") -> local(" .. localX .. "," .. localY .. ")")
     
+    -- Get drag controls setting
+    local classicControls = Config:get("classicDragControls")
+    
     -- Handle grid click
-    if button == 1 then -- Left click
+    if (not classicControls and button == 1) or (classicControls and button == 1) then -- Left click
         -- If there's a selected inventory item, try to place it on the grid
         if gameState.selectedInventoryItem then
             -- Find the cell that was clicked
@@ -202,7 +206,7 @@ function InputHandler:handleGridClick(gameState, x, y, button)
             -- Show combination visualization
             gameState.visualization:showCombination(screenX, screenY, selectedElement, resultElement, resultElement)
         end
-    elseif button == 2 then -- Right click
+    elseif (not classicControls and button == 2) or (classicControls and button == 2) then -- Right click
         -- Use the CombinationGrid's removeElementToInventory function
         local removed, elementName, centerX, centerY = gameState.combinationGrid:removeElementToInventory(localX, localY)
         
@@ -229,7 +233,10 @@ end
 ---@param button number Mouse button that was pressed
 ---@return boolean Whether the input was handled
 function InputHandler:handleInventoryClick(gameState, x, y, button)
-    if button == 1 then -- Left click
+    -- Get drag controls setting
+    local classicControls = Config:get("classicDragControls")
+    
+    if (not classicControls and button == 1) or (classicControls and button == 1) then -- Left click
         -- Calculate the local inventory coordinates
         local localX = x - gameState.inventoryX
         local localY = y - gameState.inventoryY
@@ -248,7 +255,7 @@ function InputHandler:handleInventoryClick(gameState, x, y, button)
             -- Show selection effect
             gameState.visualization:showElement(x, y, elementName)
         end
-    elseif button == 2 then -- Right click
+    elseif (not classicControls and button == 2) or (classicControls and button == 2) then -- Right click
         -- Clear selection
         gameState.selectedInventoryItem = nil
     end
@@ -351,6 +358,52 @@ end
 function InputHandler:getCellCenterPosition(gameState, row, col)
     local cellX, cellY, cellWidth, cellHeight = self:getCellBounds(gameState, row, col)
     return cellX + cellWidth/2, cellY + cellHeight/2
+end
+
+-- Handle shop mouse press
+function InputHandler:handleShopMousePress(gameState, x, y, button)
+    if gameState.shop then
+        -- Switch left and right click behavior based on classic control setting
+        local classicControls = Config:get("classicDragControls")
+        local actualButton = button
+        
+        -- If using classic controls, swap mouse buttons for shop interactions
+        if classicControls then
+            if button == 1 then actualButton = 2
+            elseif button == 2 then actualButton = 1
+            end
+        end
+        
+        return gameState.shop:mousepressed(x, y, actualButton)
+    end
+    return false
+end
+
+-- Handle shop mouse movement
+function InputHandler:handleShopMouseMove(gameState, x, y, dx, dy)
+    if gameState.shop then
+        return gameState.shop:mousemoved(x, y, dx, dy)
+    end
+    return false
+end
+
+-- Handle shop mouse release
+function InputHandler:handleShopMouseRelease(gameState, x, y, button)
+    if gameState.shop then
+        -- Switch left and right click behavior based on classic control setting
+        local classicControls = Config:get("classicDragControls")
+        local actualButton = button
+        
+        -- If using classic controls, swap mouse buttons for shop interactions
+        if classicControls then
+            if button == 1 then actualButton = 2
+            elseif button == 2 then actualButton = 1
+            end
+        end
+        
+        return gameState.shop:mousereleased(x, y, actualButton)
+    end
+    return false
 end
 
 return InputHandler 

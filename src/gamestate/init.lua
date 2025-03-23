@@ -5,6 +5,8 @@ local CombinationGrid = require("src.data.combination-grid")
 local Visualization = require("src.visualization.init")
 local UIRenderer = require("src.ui.renderer")
 local InputHandler = require("src.gamestate.input_handler")
+local Shop = require("src.data.shop.init")
+local Config = require("src.gamestate.config")
 
 ---@class GameState
 ---@field deltaTime number
@@ -15,6 +17,7 @@ local InputHandler = require("src.gamestate.input_handler")
 ---@field visualization Visualization
 ---@field uiRenderer UIRenderer
 ---@field inputHandler InputHandler
+---@field shop Shop
 ---@field selectedInventoryItem string|nil
 ---@field gridX number
 ---@field gridY number
@@ -42,6 +45,7 @@ function GameState:new()
     o.visualization = Visualization:new()
     o.uiRenderer = UIRenderer:new()
     o.inputHandler = InputHandler:new()
+    o.shop = Shop:new()
     
     -- UI state
     o.selectedInventoryItem = nil
@@ -57,6 +61,9 @@ end
 
 -- Initialize the game state
 function GameState:init()
+    -- Initialize configuration
+    Config:init()
+    
     -- Create menu instances
     self.modes.menu = MainMenu:new()
     self.modes.options = SettingsMenu:new()
@@ -64,6 +71,11 @@ function GameState:init()
     -- Initialize all modes
     self.modes.menu:init()
     self.modes.options:init()
+    
+    -- Connect shop with the grid's inventory
+    if self.shop and self.combinationGrid and self.combinationGrid.inventory then
+        self.shop:setInventory(self.combinationGrid.inventory)
+    end
 end
 
 -- Ensure menu is initialized
@@ -94,6 +106,7 @@ function GameState:update(dt)
         -- Update game systems
         self.combinationGrid:update(dt)
         self.visualization:update(dt)
+        self.shop:update(dt)
     elseif self.currentState == "options" then
         self:ensureOptionsInitialized()
         self.modes.options:update(dt)
@@ -125,12 +138,56 @@ end
 
 -- Handle mouse press events
 function GameState:mousepressed(x, y, button)
+    -- For playing state, use our shop input handler
+    if self.currentState == "playing" then
+        -- First check if the shop UI needs to handle it
+        local shopHandled = self.inputHandler:handleShopMousePress(self, x, y, button)
+        if shopHandled then
+            return
+        end
+    end
+    
+    -- If not handled by shop, use standard input handler
     self.inputHandler:handleMousePress(self, x, y, button)
 end
 
 -- Handle mouse release events
 function GameState:mousereleased(x, y, button)
+    -- For playing state, use our shop input handler
+    if self.currentState == "playing" then
+        -- First check if the shop should handle the release
+        local shopHandled = self.inputHandler:handleShopMouseRelease(self, x, y, button)
+        if shopHandled then
+            return
+        end
+    end
+    
+    -- If not handled by shop, use standard input handler
     self.inputHandler:handleMouseRelease(self, x, y, button)
+end
+
+-- Handle mouse movement events
+function GameState:mousemoved(x, y, dx, dy)
+    -- For playing state, use our shop input handler
+    if self.currentState == "playing" then
+        -- Check if shop dragging is active
+        local shopHandled = self.inputHandler:handleShopMouseMove(self, x, y, dx, dy)
+        if shopHandled then
+            return
+        end
+    end
+    
+    -- Add any other movement handling here
+end
+
+-- Handle mouse wheel events
+function GameState:wheelmoved(x, y, dx, dy)
+    if self.currentState == "playing" and self.shop and self.shop.wheelmoved then
+        local handled = self.shop:wheelmoved(x, y, dx, dy)
+        if handled then
+            return
+        end
+    end
 end
 
 -- Handle window resize
@@ -155,6 +212,9 @@ function GameState:reset()
     self.selectedInventoryItem = nil
     if self.visualization then
         self.visualization:clear()
+    end
+    if self.shop then
+        self.shop = Shop:new()
     end
 end
 

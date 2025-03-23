@@ -14,7 +14,7 @@ local unpack = unpack
 local Drawing = {}
 
 ---Apply this module to a CombinationGrid instance
----@param grid table The CombinationGrid instance
+---@param grid CombinationGrid The CombinationGrid instance
 function Drawing.applyTo(grid)
     -- Add all drawing functions from this module to the grid
     grid.draw = Drawing.draw
@@ -59,7 +59,7 @@ function Drawing.drawGrid(self)
             
             -- Draw element if cell is not empty
             if self.grid[row][col] then
-                self:drawElement(self.grid[row][col].element, x, y)
+                self:drawElement(self.grid[row][col].element, x, y, row, col)
             end
         end
     end
@@ -70,8 +70,11 @@ end
 ---@param elementName string Element ID
 ---@param x number X position
 ---@param y number Y position
-function Drawing.drawElement(self, elementName, x, y)
+---@param row number Optional row for transformation effects
+---@param col number Optional column for transformation effects
+function Drawing.drawElement(self, elementName, x, y, row, col)
     -- Get element data (either from elements or directly from materialData)
+    ---@type {name: string, color: number[]}
     local elementData
     
     if self.elements[elementName] then
@@ -119,39 +122,91 @@ function Drawing.drawElement(self, elementName, x, y)
     -- Draw the element name
     love.graphics.printf(elementData.name, x + 5, y + self.cellSize/2 - fontSize/2, self.cellSize - 10, "center")
     
-    -- Reset font
-    love.graphics.setFont(love.graphics.newFont(12))
+    -- Check if this element has a transformation
+    local transformation
+    if row and col and self.grid[row][col] and self.grid[row][col].transformation then
+        transformation = self.grid[row][col].transformation
+    end
+    
+    -- If this element is transforming, draw the transformation progress
+    if transformation then
+        -- Draw progress bar background
+        love.graphics.setColor(0.1, 0.1, 0.1, 0.8)
+        love.graphics.rectangle("fill", x + 10, y + self.cellSize - 25, self.cellSize - 20, 10)
+        
+        -- Calculate progress (0.0 to 1.0)
+        local progress = 1.0 - (transformation.timeRemaining / transformation.duration)
+        
+        -- Draw progress bar fill
+        love.graphics.setColor(0.2, 0.8, 0.2) -- Green progress bar
+        love.graphics.rectangle("fill", x + 10, y + self.cellSize - 25, 
+            (self.cellSize - 20) * progress, 10)
+        
+        -- Draw progress text with timer
+        local secondsLeft = math.ceil(transformation.timeRemaining)
+        love.graphics.setColor(1, 1, 1)
+        
+        -- Create smaller font for timer
+        local timerFont = love.graphics.newFont(12)
+        love.graphics.setFont(timerFont)
+        
+        -- Draw text shadow for better visibility
+        love.graphics.setColor(0, 0, 0, 0.7)
+        love.graphics.printf(secondsLeft .. "s", x + 1, y + self.cellSize - 40 + 1, self.cellSize, "center")
+        
+        -- Draw timer text
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf(secondsLeft .. "s", x, y + self.cellSize - 40, self.cellSize, "center")
+        
+        -- Draw transformation type (e.g., "Growing...")
+        local transformLabel = "Transforming..."
+        if transformation.type == "seed_to_plant" then
+            transformLabel = "Growing..."
+        end
+        
+        love.graphics.setColor(0, 0, 0, 0.7)
+        love.graphics.printf(transformLabel, x + 1, y + 10 + 1, self.cellSize, "center")
+        
+        love.graphics.setColor(1, 0.8, 0.2) -- Yellow/gold text
+        love.graphics.printf(transformLabel, x, y + 10, self.cellSize, "center")
+    end
 end
 
 ---Draw the inventory interface
 ---@param self CombinationGrid The CombinationGrid instance
 ---@param x number X position
 ---@param y number Y position
----@param width number Width
----@param height number Height
+---@param width number Width of inventory area
+---@param height number Height of inventory area
 function Drawing.drawInventory(self, x, y, width, height)
-    -- Set default values if not provided
-    x = x or 0
-    y = y or 0
-    width = width or love.graphics.getWidth()
-    height = height or 60
+    -- Define inventory rendering parameters
+    local itemSize = 60
+    local margin = 10
     
-    -- Draw inventory background
-    love.graphics.setColor(0.15, 0.15, 0.15, 0.8)
-    love.graphics.rectangle("fill", x, y, width, height)
+    -- Get inventory items with counts > 0
+    local inventoryKeys = self:getInventoryKeys()
+    
+    -- Center inventory items
+    local startX = (width - (#inventoryKeys * (itemSize + margin))) / 2
     
     -- Draw inventory title
     love.graphics.setColor(1, 1, 1)
-    love.graphics.printf("Inventory", x, y - 25, width, "center")
+    love.graphics.printf("Inventory", x, y - 30, width, "center")
+    
+    -- Draw inventory background
+    love.graphics.setColor(0.15, 0.15, 0.15, 0.7)
+    love.graphics.rectangle("fill", x, y, width, height)
+    love.graphics.setColor(0.5, 0.5, 0.5)
+    love.graphics.rectangle("line", x, y, width, height)
     
     -- Draw inventory items
-    local itemSize = 60
-    local margin = 10
-    local inventoryKeys = self:getInventoryKeys()
-    local startX = x + (width - (#inventoryKeys * (itemSize + margin))) / 2
     local index = 0
+    -- Get actual inventory items
+    local items = self.inventory:getItems()
     
-    for elementId, count in pairs(self.inventory:getItems()) do
+    -- Draw each item with count
+    for elementId, count in pairs(items) do
+        -- Only draw items with count > 0
         if count > 0 then
             local itemX = startX + index * (itemSize + margin)
             
@@ -220,6 +275,7 @@ end
 ---@param size number Item size
 function Drawing.drawInventoryItem(self, elementName, count, x, y, size)
     -- Get element data (either from elements or directly from materialData)
+    ---@type {name: string, color: number[]}
     local elementData
     
     if self.elements[elementName] then

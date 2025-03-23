@@ -68,6 +68,22 @@ function love.mousereleased(x, y, button)
     end
 end
 
+-- Handle mouse movement
+function love.mousemoved(x, y, dx, dy)
+    -- Pass mouse movement to the game state for dragging
+    if gameState and gameState.mousemoved then
+        gameState:mousemoved(x, y, dx, dy)
+    end
+end
+
+-- Handle mouse wheel movement
+function love.wheelmoved(x, y, dx, dy)
+    -- Pass mouse wheel events to the game state
+    if gameState and gameState.wheelmoved then
+        gameState:wheelmoved(x, y, dx, dy)
+    end
+end
+
 -- Handle window resize
 function love.resize(w, h)
     -- Menu will automatically adjust to new window size

@@ -43,6 +43,11 @@ function Renderer:drawGameUI(gameState)
     gameState.combinationGrid:drawGrid()
     love.graphics.pop()
     
+    -- Draw visual effects after grid but before UI
+    if gameState.combinationGrid.drawEffects then
+        gameState.combinationGrid:drawEffects()
+    end
+    
     -- Calculate and save inventory position
     local inventoryPosition = UI.GridLayout:calculateInventoryPosition()
     gameState.inventoryX = inventoryPosition.x
@@ -61,6 +66,11 @@ function Renderer:drawGameUI(gameState)
     -- Draw visualization effects
     if gameState.visualization then
         gameState.visualization:draw()
+    end
+    
+    -- Draw shop UI
+    if gameState.shop then
+        gameState.shop:draw()
     end
     
     -- Draw FPS counter

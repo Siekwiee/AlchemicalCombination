@@ -19,9 +19,13 @@
       }
     },
     "others": {
-      "Seed": {
-        "description": "needed for Plant recipe:",
-        "price": 10
+      "seed": {
+        "name": "Seed",
+        "tier": 2,
+        "color": [0.2, 0.8, 0.2],
+        "description": "Grows from earth with waters nurturing",
+        "value": 30,
+        "price": 100
       }
     }
   },
@@ -37,7 +41,7 @@
       "tier": 3,
       "color": [1, 0.84, 0],
       "description": "A precious metal refined through alchemy",
-      "value": 100,
+      "value": 30,
       "recipe": {
         "metal": 1,
         "fire": 1
@@ -48,11 +52,18 @@
       "tier": 2,
       "color": [0.7, 0.7, 0.7],
       "description": "Forged from fire and earth",
-      "value": 25,
+      "value": 15,
       "recipe": {
         "fire": 1,
         "earth": 1
       }
+    },
+    "plant": {
+      "name": "The Plant of Life",
+      "tier": 3,
+      "color": [0.2, 0.8, 0.2],
+      "description": "Grows from seed with water and air",
+      "value": 150
     }
   }
 }
