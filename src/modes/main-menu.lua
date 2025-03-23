@@ -1,5 +1,5 @@
 local love = require("love")
-local UI = require("src.ui")
+local UI = require("src.ui.init")
 
 
 local MainMenu = {
@@ -21,6 +21,8 @@ function MainMenu:new(o)
     o.update = self.update
     o.draw = self.draw
     o.handleKeyPress = self.handleKeyPress
+    o.handleMousePress = self.handleMousePress
+    o.handleMouseRelease = self.handleMouseRelease
     
     return o
 end
@@ -115,6 +117,38 @@ function MainMenu:handleKeyPress(key)
         end
     elseif key == "return" or key == "space" then
         return self.buttons[self.selectedButton].action
+    end
+    return nil
+end
+
+function MainMenu:handleMousePress(x, y, button)
+    -- Only handle left mouse button
+    if button ~= 1 then return nil end
+    
+    -- Check if any button was clicked
+    for i, btn in ipairs(self.buttons) do
+        if x >= btn.x and x < btn.x + btn.width and
+           y >= btn.y and y < btn.y + btn.height then
+            self.selectedButton = i
+            -- Don't trigger action immediately, wait for release
+            return nil
+        end
+    end
+    return nil
+end
+
+function MainMenu:handleMouseRelease(x, y, button)
+    -- Only handle left mouse button
+    if button ~= 1 then return nil end
+    
+    -- Check if mouse was released over a button
+    for i, btn in ipairs(self.buttons) do
+        if x >= btn.x and x < btn.x + btn.width and
+           y >= btn.y and y < btn.y + btn.height and
+           i == self.selectedButton then
+            -- Trigger the button action
+            return btn.action
+        end
     end
     return nil
 end

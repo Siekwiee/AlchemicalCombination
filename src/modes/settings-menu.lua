@@ -1,5 +1,5 @@
 local love = require("love")
-local UI = require("src.ui")
+local UI = require("src.ui.init")
 
 local SettingsMenu = {
     keybinds = {
@@ -33,6 +33,8 @@ function SettingsMenu:new(o)
     o.update = self.update
     o.draw = self.draw
     o.handleKeyPress = self.handleKeyPress
+    o.handleMousePress = self.handleMousePress
+    o.handleMouseRelease = self.handleMouseRelease
     
     return o
 end
@@ -115,6 +117,34 @@ function SettingsMenu:handleKeyPress(key)
     if key == "escape" or key == "return" or key == "space" then
         return "back_to_menu"
     end
+    return nil
+end
+
+function SettingsMenu:handleMousePress(x, y, button)
+    -- Only handle left mouse button
+    if button ~= 1 then return nil end
+    
+    -- Check if back button was clicked
+    if x >= self.backButton.x and x < self.backButton.x + self.backButton.width and
+       y >= self.backButton.y and y < self.backButton.y + self.backButton.height then
+        self.selectedOption = 1
+        return nil
+    end
+    
+    return nil
+end
+
+function SettingsMenu:handleMouseRelease(x, y, button)
+    -- Only handle left mouse button
+    if button ~= 1 then return nil end
+    
+    -- Check if back button was released
+    if x >= self.backButton.x and x < self.backButton.x + self.backButton.width and
+       y >= self.backButton.y and y < self.backButton.y + self.backButton.height and
+       self.selectedOption == 1 then
+        return "back_to_menu"
+    end
+    
     return nil
 end
 

@@ -1,16 +1,27 @@
 local love = require("love")
 
 local Button = require("src.ui.button")
+local Title = require("src.ui.title")
+local Instruction = require("src.ui.instruction")
+local FPSCounter = require("src.ui.fps_counter")
+local GoldCounter = require("src.ui.gold_counter")
+local GridLayout = require("src.ui.grid_layout")
 
 local UI = {
-    Button = Button
+    Button = Button,
+    Title = Title,
+    Instruction = Instruction,
+    FPSCounter = FPSCounter,
+    GoldCounter = GoldCounter,
+    GridLayout = GridLayout
 }
 
 function UI:init()
     -- Initialize default fonts
     self.fonts = {
         large = love.graphics.newFont(24),
-        normal = love.graphics.newFont(16)
+        normal = love.graphics.newFont(16),
+        small = love.graphics.newFont(12)
     }
 end
 
