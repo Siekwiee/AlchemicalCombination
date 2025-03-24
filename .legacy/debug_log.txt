@@ -1,0 +1,411 @@
+=== DEBUG LOG STARTED AT 2025-03-24 20:03:42 ===
+
+[20:03:47][DEBUG][InputHandler] Debug mode toggled true
+[20:03:48][DEBUG][InputHandler] Key pressed {key="up", scancode="up", isrepeat=false}
+[20:03:51][DEBUG][InputHandler] Key pressed {key="f12", scancode="f12", isrepeat=false}
+[20:03:52][DEBUG][InputHandler] Debug mode toggled true
+[20:03:53][DEBUG][InputHandler] Key pressed {key="f11", scancode="f11", isrepeat=false}
+[20:03:54][DEBUG][InputHandler] Debug log level changed {from="error", to="debug", available={1="debug", 2="info", 3="warn", 4="error"}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=11, dy=-2}, position={y=1077, x=612}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=15, dy=-3}, position={y=1074, x=627}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=19, dy=-4}, position={y=1070, x=646}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=20, dy=-3}, position={y=1067, x=666}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=20, dy=-5}, position={y=1062, x=686}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=28, dy=-6}, position={y=1055, x=719}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=21, dy=-6}, position={y=1049, x=740}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=28, dy=-6}, position={y=1043, x=768}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=27, dy=-7}, position={y=1036, x=795}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=29, dy=-7}, position={y=1029, x=824}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=35, dy=-9}, position={y=1020, x=859}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=38, dy=-11}, position={y=1009, x=897}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=38, dy=-10}, position={y=999, x=935}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=43, dy=-11}, position={y=988, x=978}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=51, dy=-13}, position={y=975, x=1029}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=39, dy=-10}, position={y=965, x=1068}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=35, dy=-8}, position={y=957, x=1103}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=41, dy=-11}, position={y=946, x=1144}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=34, dy=-8}, position={y=938, x=1178}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=29, dy=-7}, position={y=930, x=1209}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=35, dy=-11}, position={y=919, x=1244}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=22, dy=-7}, position={y=912, x=1266}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=22, dy=-8}, position={y=904, x=1288}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=17, dy=-7}, position={y=897, x=1305}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=20, dy=-8}, position={y=888, x=1326}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=13, dy=-7}, position={y=880, x=1342}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=11, dy=-8}, position={y=872, x=1353}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=8, dy=-6}, position={y=866, x=1361}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=8, dy=-7}, position={y=859, x=1369}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-7}, position={y=852, x=1375}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-7}, position={y=845, x=1379}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-6}, position={y=838, x=1380}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=0, dy=-9}, position={y=822, x=1380}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=-8}, position={y=814, x=1376}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-5, dy=-8}, position={y=806, x=1371}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=-9}, position={y=797, x=1364}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-9, dy=-11}, position={y=786, x=1355}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-14, dy=-14}, position={y=771, x=1339}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-14, dy=-12}, position={y=759, x=1325}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-16, dy=-13}, position={y=746, x=1309}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-19, dy=-13}, position={y=733, x=1290}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-18, dy=-13}, position={y=720, x=1272}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-24, dy=-15}, position={y=703, x=1245}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-23, dy=-12}, position={y=691, x=1222}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-51, dy=-21}, position={y=670, x=1171}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-24, dy=-9}, position={y=661, x=1147}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-26, dy=-8}, position={y=653, x=1121}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-24, dy=-6}, position={y=647, x=1097}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-26, dy=-6}, position={y=641, x=1067}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-23, dy=-5}, position={y=636, x=1044}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-26, dy=-5}, position={y=631, x=1018}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-20, dy=-4}, position={y=627, x=998}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-21, dy=-3}, position={y=624, x=977}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-17, dy=-3}, position={y=621, x=960}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-11, dy=-2}, position={y=619, x=949}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-10, dy=-2}, position={y=617, x=937}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-10, dy=-1}, position={y=616, x=927}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-6, dy=0}, position={y=614, x=916}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=0, dy=8}, position={y=632, x=910}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=1, dy=6}, position={y=650, x=913}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=2, dy=8}, position={y=658, x=915}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=2, dy=7}, position={y=665, x=917}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=2, dy=9}, position={y=674, x=919}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=1, dy=9}, position={y=683, x=920}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=1, dy=10}, position={y=693, x=921}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=1, dy=9}, position={y=702, x=922}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=0, dy=12}, position={y=714, x=922}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=0, dy=10}, position={y=727, x=922}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-1, dy=14}, position={y=744, x=921}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=18}, position={y=762, x=919}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=11}, position={y=773, x=917}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=17}, position={y=790, x=914}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=17}, position={y=807, x=911}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=14}, position={y=821, x=908}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=14}, position={y=835, x=904}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-6, dy=22}, position={y=857, x=898}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=8}, position={y=865, x=896}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=10}, position={y=876, x=891}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=7}, position={y=883, x=888}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=8}, position={y=891, x=885}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=6}, position={y=898, x=882}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=6}, position={y=904, x=880}}
+[20:03:59][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=7}, position={y=917, x=873}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-6}, position={y=937, x=859}}
+[20:04:00][DEBUG][InputHandler] Mouse pressed {x=872, y=895, button=1}
+[20:04:00][DEBUG][InputHandler] Inventory click {inventoryBounds={height=200, x=10, y=860, width=1900}, inventoryPos={y=35, x=862}, screenPos={y=895, x=872}, button=1}
+[20:04:00][DEBUG][InputHandler] Selected inventory item {position={y=895, x=872}, inventoryState={}, element="water"}
+[20:04:00][DEBUG][InputHandler] Mouse released {x=872, y=895, button=1}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=2, dy=-6}, position={y=879, x=877}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=3, dy=-7}, position={y=870, x=880}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-15}, position={y=855, x=884}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-16}, position={y=837, x=888}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=3, dy=-13}, position={y=821, x=892}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-27}, position={y=794, x=898}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-23}, position={y=771, x=904}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=7, dy=-36}, position={y=735, x=911}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=7, dy=-32}, position={y=703, x=918}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-24}, position={y=679, x=924}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=5, dy=-31}, position={y=648, x=929}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=9, dy=-37}, position={y=611, x=938}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=8, dy=-31}, position={y=580, x=946}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-6}, position={y=574, x=947}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=10, dy=-36}, position={y=538, x=957}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=8, dy=-27}, position={y=511, x=965}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=9, dy=-22}, position={y=489, x=974}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=7, dy=-16}, position={y=473, x=981}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-12}, position={y=461, x=987}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=5, dy=-7}, position={y=454, x=992}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-6}, position={y=448, x=996}}
+[20:04:00][DEBUG][InputHandler] Mouse pressed {x=1001, y=446, button=1}
+[20:04:00][DEBUG][InputHandler] Grid click converted {button=1, screenPos={y=446, x=1001}, gridPos={y=366, x=241}}
+[20:04:00][DEBUG][InputHandler] Mouse released {x=1001, y=446, button=1}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=6}, position={y=455, x=996}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-6, dy=12}, position={y=467, x=990}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-8, dy=19}, position={y=486, x=982}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-8, dy=17}, position={y=503, x=974}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-11, dy=29}, position={y=535, x=962}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-11, dy=27}, position={y=566, x=949}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-16, dy=37}, position={y=603, x=933}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-20, dy=48}, position={y=652, x=912}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-16, dy=39}, position={y=691, x=896}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-12, dy=28}, position={y=719, x=884}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-10, dy=24}, position={y=743, x=874}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-9, dy=19}, position={y=762, x=865}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=16}, position={y=778, x=858}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-5, dy=11}, position={y=791, x=852}}
+[20:04:00][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=8}, position={y=799, x=849}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=6}, position={y=846, x=824}}
+[20:04:01][DEBUG][InputHandler] Mouse pressed {x=795, y=896, button=1}
+[20:04:01][DEBUG][InputHandler] Inventory click {inventoryBounds={height=200, x=10, y=860, width=1900}, inventoryPos={y=36, x=785}, screenPos={y=896, x=795}, button=1}
+[20:04:01][DEBUG][InputHandler] Selected inventory item {position={y=896, x=795}, inventoryState={}, element="fire"}
+[20:04:01][DEBUG][InputHandler] Mouse released {x=799, y=892, button=1}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=5, dy=-9}, position={y=881, x=805}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=7, dy=-13}, position={y=868, x=812}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-13}, position={y=853, x=819}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=10, dy=-21}, position={y=832, x=829}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=61, dy=-158}, position={y=670, x=891}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=2, dy=-6}, position={y=664, x=893}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=11, dy=-36}, position={y=628, x=904}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=12, dy=-36}, position={y=592, x=916}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=10, dy=-36}, position={y=556, x=926}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=11, dy=-37}, position={y=519, x=937}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=9, dy=-37}, position={y=482, x=946}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=7, dy=-28}, position={y=454, x=953}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=9, dy=-35}, position={y=419, x=962}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=5, dy=-24}, position={y=395, x=967}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-27}, position={y=368, x=973}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-17}, position={y=351, x=977}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=5, dy=-20}, position={y=331, x=982}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=5, dy=-13}, position={y=318, x=987}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-12}, position={y=306, x=991}}
+[20:04:01][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-7}, position={y=299, x=995}}
+[20:04:01][DEBUG][InputHandler] Mouse pressed {x=1004, y=278, button=1}
+[20:04:01][DEBUG][InputHandler] Grid click converted {button=1, screenPos={y=278, x=1004}, gridPos={y=198, x=244}}
+[20:04:01][DEBUG][InputHandler] Mouse released {x=1004, y=278, button=1}
+[20:04:02][DEBUG][InputHandler] Mouse pressed {x=1001, y=281, button=1}
+[20:04:02][DEBUG][InputHandler] Grid click converted {button=1, screenPos={y=281, x=1001}, gridPos={y=201, x=241}}
+[20:04:02][DEBUG][InputHandler] Mouse released {x=1001, y=285, button=1}
+[20:04:02][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=6}, position={y=320, x=989}}
+[20:04:02][DEBUG][GameState] Mouse moved {delta={dx=-1, dy=8}, position={y=328, x=988}}
+[20:04:02][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=8}, position={y=338, x=985}}
+[20:04:02][DEBUG][GameState] Mouse moved {delta={dx=-1, dy=6}, position={y=344, x=984}}
+[20:04:02][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=9}, position={y=354, x=982}}
+[20:04:02][DEBUG][GameState] Mouse moved {delta={dx=-1, dy=6}, position={y=360, x=981}}
+[20:04:02][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=6}, position={y=367, x=979}}
+[20:04:02][DEBUG][GameState] Mouse moved {delta={dx=0, dy=6}, position={y=373, x=979}}
+[20:04:02][DEBUG][InputHandler] Mouse pressed {x=976, y=396, button=1}
+[20:04:02][DEBUG][InputHandler] Grid click converted {button=1, screenPos={y=396, x=976}, gridPos={y=316, x=216}}
+[20:04:02][DEBUG][InputHandler] Combination created {position={grid={...}, screen={...}}, firstElement="fire", resultElement="steam"}
+[20:04:02][DEBUG][InputHandler] Mouse released {x=976, y=399, button=1}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=6, dy=0}, position={y=445, x=1043}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=15, dy=-1}, position={y=444, x=1064}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=9, dy=0}, position={y=444, x=1073}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=11, dy=-1}, position={y=443, x=1084}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=10, dy=0}, position={y=443, x=1094}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=14, dy=-1}, position={y=442, x=1110}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=12, dy=-2}, position={y=440, x=1122}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=17, dy=-2}, position={y=438, x=1139}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=16, dy=-3}, position={y=435, x=1155}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=20, dy=-3}, position={y=432, x=1175}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=13, dy=-3}, position={y=429, x=1188}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=18, dy=-4}, position={y=425, x=1206}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=20, dy=-4}, position={y=421, x=1226}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=18, dy=-4}, position={y=417, x=1244}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=17, dy=-3}, position={y=414, x=1261}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=21, dy=-4}, position={y=410, x=1282}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=19, dy=-4}, position={y=406, x=1301}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=19, dy=-4}, position={y=402, x=1321}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=18, dy=-4}, position={y=398, x=1340}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=14, dy=-3}, position={y=395, x=1354}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=11, dy=-3}, position={y=392, x=1368}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=11, dy=-3}, position={y=389, x=1381}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=17, dy=-4}, position={y=385, x=1398}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=13, dy=-4}, position={y=381, x=1411}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=20, dy=-7}, position={y=374, x=1431}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=20, dy=-8}, position={y=366, x=1453}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=13, dy=-6}, position={y=360, x=1466}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=11, dy=-5}, position={y=354, x=1478}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=8, dy=-4}, position={y=350, x=1486}}
+[20:04:05][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-3}, position={y=347, x=1492}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=7}, position={y=372, x=1456}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-6, dy=7}, position={y=379, x=1450}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-6, dy=7}, position={y=386, x=1444}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-9, dy=10}, position={y=396, x=1435}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=10}, position={y=406, x=1428}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-8, dy=9}, position={y=416, x=1419}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=9}, position={y=429, x=1409}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-21, dy=24}, position={y=455, x=1386}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-11, dy=13}, position={y=468, x=1375}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-10, dy=11}, position={y=479, x=1365}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-15, dy=16}, position={y=495, x=1350}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-12, dy=15}, position={y=510, x=1338}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-16, dy=17}, position={y=527, x=1322}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-12, dy=13}, position={y=542, x=1307}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-17, dy=19}, position={y=561, x=1290}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-17, dy=17}, position={y=578, x=1273}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-13, dy=14}, position={y=592, x=1260}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-16, dy=17}, position={y=609, x=1244}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-14, dy=14}, position={y=623, x=1230}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-25, dy=23}, position={y=646, x=1205}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-9, dy=8}, position={y=654, x=1196}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-11, dy=10}, position={y=664, x=1185}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-10, dy=8}, position={y=672, x=1175}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-10, dy=7}, position={y=680, x=1164}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-8, dy=6}, position={y=686, x=1156}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-14, dy=8}, position={y=694, x=1142}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-9, dy=4}, position={y=698, x=1133}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-9, dy=5}, position={y=703, x=1124}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-9, dy=4}, position={y=707, x=1114}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-9, dy=3}, position={y=710, x=1105}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-8, dy=3}, position={y=714, x=1095}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-8, dy=2}, position={y=716, x=1087}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-6, dy=3}, position={y=721, x=1075}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=2}, position={y=723, x=1066}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=4}, position={y=727, x=1059}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=3}, position={y=730, x=1052}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=5}, position={y=735, x=1045}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-6, dy=3}, position={y=738, x=1039}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=6}, position={y=744, x=1032}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=6}, position={y=750, x=1025}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-13, dy=11}, position={y=761, x=1012}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-6, dy=5}, position={y=767, x=1005}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-7, dy=6}, position={y=773, x=998}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-6, dy=5}, position={y=783, x=987}}
+[20:04:07][DEBUG][GameState] Mouse moved {delta={dx=-10, dy=7}, position={y=790, x=977}}
+[20:04:08][DEBUG][InputHandler] Mouse pressed {x=863, y=886, button=1}
+[20:04:08][DEBUG][InputHandler] Inventory click {inventoryBounds={height=200, x=10, y=860, width=1900}, inventoryPos={y=26, x=853}, screenPos={y=886, x=863}, button=1}
+[20:04:08][DEBUG][InputHandler] Selected inventory item {position={y=886, x=863}, inventoryState={}, element="water"}
+[20:04:08][DEBUG][InputHandler] Mouse released {x=862, y=876, button=1}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=-6}, position={y=867, x=862}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=-6}, position={y=853, x=862}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=-9}, position={y=844, x=862}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=-8}, position={y=836, x=862}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=-21}, position={y=815, x=862}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-11}, position={y=804, x=863}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=-11}, position={y=793, x=863}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=3, dy=-16}, position={y=777, x=866}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=2, dy=-20}, position={y=757, x=868}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=2, dy=-19}, position={y=738, x=870}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-17}, position={y=721, x=871}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-22}, position={y=699, x=872}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-26}, position={y=673, x=873}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=-26}, position={y=647, x=873}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-34}, position={y=613, x=871}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=-28}, position={y=585, x=868}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=-25}, position={y=560, x=864}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-5, dy=-24}, position={y=536, x=859}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=-17}, position={y=517, x=854}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=-14}, position={y=503, x=850}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-8}, position={y=494, x=848}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-9}, position={y=484, x=846}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-8}, position={y=476, x=844}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-9}, position={y=467, x=842}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-8}, position={y=459, x=840}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=-9}, position={y=450, x=837}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=-8}, position={y=442, x=834}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-7}, position={y=435, x=832}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=-8}, position={y=427, x=829}}
+[20:04:08][DEBUG][InputHandler] Mouse pressed {x=824, y=417, button=1}
+[20:04:08][DEBUG][InputHandler] Grid click converted {button=1, screenPos={y=417, x=824}, gridPos={y=337, x=64}}
+[20:04:08][DEBUG][InputHandler] Mouse released {x=824, y=417, button=1}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=6}, position={y=429, x=824}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=8}, position={y=438, x=824}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=15}, position={y=454, x=824}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=20}, position={y=475, x=824}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=28}, position={y=503, x=824}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=22}, position={y=525, x=824}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=0, dy=32}, position={y=560, x=824}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-1, dy=28}, position={y=588, x=823}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=25}, position={y=613, x=821}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-1, dy=24}, position={y=637, x=820}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=21}, position={y=658, x=818}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=28}, position={y=686, x=814}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=20}, position={y=706, x=811}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=21}, position={y=728, x=808}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-5, dy=20}, position={y=748, x=803}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=16}, position={y=764, x=800}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=15}, position={y=779, x=796}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=15}, position={y=794, x=792}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=12}, position={y=806, x=788}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=13}, position={y=819, x=785}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=7}, position={y=826, x=782}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-6, dy=30}, position={y=857, x=776}}
+[20:04:08][DEBUG][GameState] Mouse moved {delta={dx=-1, dy=6}, position={y=863, x=775}}
+[20:04:09][DEBUG][InputHandler] Mouse pressed {x=793, y=888, button=1}
+[20:04:09][DEBUG][InputHandler] Inventory click {inventoryBounds={height=200, x=10, y=860, width=1900}, inventoryPos={y=28, x=783}, screenPos={y=888, x=793}, button=1}
+[20:04:09][DEBUG][InputHandler] Selected inventory item {position={y=888, x=793}, inventoryState={}, element="fire"}
+[20:04:09][DEBUG][InputHandler] Mouse released {x=801, y=870, button=1}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=2, dy=-8}, position={y=858, x=804}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=5, dy=-19}, position={y=839, x=809}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-20}, position={y=819, x=813}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-16}, position={y=800, x=818}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-23}, position={y=777, x=822}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=2, dy=-17}, position={y=760, x=824}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=3, dy=-19}, position={y=738, x=828}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=5, dy=-30}, position={y=708, x=833}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-24}, position={y=684, x=837}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-26}, position={y=658, x=841}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=5, dy=-28}, position={y=628, x=847}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-21}, position={y=607, x=851}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=4, dy=-24}, position={y=583, x=855}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=3, dy=-21}, position={y=562, x=858}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-15}, position={y=547, x=859}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-6}, position={y=541, x=860}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=2, dy=-20}, position={y=521, x=862}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-21}, position={y=500, x=863}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=0, dy=-13}, position={y=487, x=863}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=0, dy=-19}, position={y=468, x=863}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-12}, position={y=456, x=861}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-11}, position={y=445, x=859}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-12}, position={y=433, x=857}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-7}, position={y=424, x=855}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=-11}, position={y=413, x=851}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=-6}, position={y=406, x=848}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-2, dy=-8}, position={y=398, x=846}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=-8}, position={y=390, x=842}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=-6}, position={y=377, x=836}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=-7}, position={y=370, x=833}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=-8}, position={y=357, x=826}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=-7}, position={y=350, x=822}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=-6}, position={y=344, x=818}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=-7}, position={y=337, x=815}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-4, dy=-7}, position={y=330, x=811}}
+[20:04:09][DEBUG][GameState] Mouse moved {delta={dx=-3, dy=-6}, position={y=318, x=806}}
+[20:04:09][DEBUG][InputHandler] Mouse pressed {x=804, y=302, button=1}
+[20:04:09][DEBUG][InputHandler] Grid click converted {button=1, screenPos={y=302, x=804}, gridPos={y=222, x=44}}
+[20:04:09][DEBUG][InputHandler] Mouse released {x=804, y=302, button=1}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=1, dy=-6}, position={y=296, x=819}}
+[20:04:10][DEBUG][InputHandler] Mouse pressed {x=823, y=267, button=1}
+[20:04:10][DEBUG][InputHandler] Grid click converted {button=1, screenPos={y=267, x=823}, gridPos={y=187, x=63}}
+[20:04:10][DEBUG][InputHandler] Mouse released {x=824, y=277, button=1}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=0, dy=10}, position={y=289, x=824}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=0, dy=7}, position={y=296, x=824}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=0, dy=12}, position={y=319, x=823}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=-1, dy=9}, position={y=328, x=822}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=-1, dy=12}, position={y=340, x=821}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=0, dy=8}, position={y=348, x=821}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=0, dy=11}, position={y=361, x=821}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=0, dy=9}, position={y=370, x=821}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=0, dy=8}, position={y=380, x=821}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=0, dy=8}, position={y=388, x=821}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=0, dy=8}, position={y=396, x=821}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=0, dy=6}, position={y=402, x=821}}
+[20:04:10][DEBUG][InputHandler] Mouse pressed {x=824, y=426, button=1}
+[20:04:10][DEBUG][InputHandler] Grid click converted {button=1, screenPos={y=426, x=824}, gridPos={y=346, x=64}}
+[20:04:10][DEBUG][InputHandler] Combination created {position={grid={...}, screen={...}}, firstElement="fire", resultElement="steam"}
+[20:04:10][DEBUG][InputHandler] Mouse released {x=825, y=426, button=1}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=6, dy=2}, position={y=439, x=852}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=7, dy=1}, position={y=440, x=859}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=7, dy=0}, position={y=440, x=866}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=9, dy=0}, position={y=441, x=877}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=10, dy=0}, position={y=441, x=887}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=14, dy=0}, position={y=441, x=901}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=16, dy=-1}, position={y=440, x=917}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=14, dy=-2}, position={y=438, x=931}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=15, dy=-3}, position={y=435, x=949}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=17, dy=-5}, position={y=430, x=969}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=20, dy=-5}, position={y=425, x=994}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-1}, position={y=424, x=1000}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=27, dy=-7}, position={y=417, x=1027}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=21, dy=-5}, position={y=412, x=1048}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-2}, position={y=410, x=1054}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=30, dy=-9}, position={y=401, x=1084}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=37, dy=-13}, position={y=388, x=1121}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=36, dy=-15}, position={y=373, x=1157}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=74, dy=-34}, position={y=338, x=1234}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=60, dy=-32}, position={y=306, x=1294}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=78, dy=-46}, position={y=260, x=1372}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=67, dy=-39}, position={y=221, x=1439}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=62, dy=-34}, position={y=187, x=1501}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=48, dy=-25}, position={y=162, x=1549}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=6, dy=-3}, position={y=159, x=1555}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=72, dy=-35}, position={y=124, x=1627}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=41, dy=-17}, position={y=107, x=1668}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=62, dy=-24}, position={y=80, x=1738}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=20, dy=-9}, position={y=70, x=1759}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=12, dy=-7}, position={y=62, x=1774}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=9, dy=-5}, position={y=57, x=1783}}
+[20:04:10][DEBUG][GameState] Mouse moved {delta={dx=7, dy=-5}, position={y=52, x=1790}}
+[20:04:11][DEBUG][GameState] Mouse moved {delta={dx=7, dy=-3}, position={y=10, x=1843}}
+[20:04:11][DEBUG][GameState] Mouse moved {delta={dx=8, dy=-2}, position={y=8, x=1851}}
+[20:04:11][DEBUG][GameState] Mouse moved {delta={dx=7, dy=-2}, position={y=5, x=1859}}
+[20:04:11][DEBUG][GameState] Mouse moved {delta={dx=7, dy=-3}, position={y=2, x=1866}}

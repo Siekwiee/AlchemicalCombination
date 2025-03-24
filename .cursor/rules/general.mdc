@@ -1,0 +1,182 @@
+---
+description: 
+globs: *.lua
+alwaysApply: false
+---
+```markdown
+# Lua Code Standards for Cursor IDE
+
+```mdc.rules
+language: lua
+ruleset:
+
+  code_style:
+    naming:
+      variables: snake_case
+      functions: snake_case
+      modules: PascalCase
+      constants: UPPER_SNAKE_CASE
+      private_prefix: "_"
+    
+    formatting:
+      indent: 2
+      max_line_length: 100
+      space_around_operators: true
+      end_of_line: lf
+    
+    organization:
+      module_pattern: |
+        local M = {}
+        -- Private implementation
+        local function _helper() end
+        -- Public interface
+        function M.public_method()
+        end
+        return M
+      require_style: no_parentheses
+      file_structure:
+        - Module declarations
+        - Constants
+        - Local dependencies
+        - Private functions
+        - Public interface
+        - Return statement
+
+  performance:
+    table_handling:
+      preallocate: true
+      avoid_loop_creation: true
+      concat_strings: true
+    variables:
+      prefer_local: true
+      cache_frequent_access: true
+
+  error_handling:
+    protected_calls: xpcall
+    nil_checks: required
+    validation:
+      preconditions: assert
+
+  game_development:
+    loop_structure: fixed_timestep
+    collision_detection: spatial_partitioning
+    state_management: encapsulated
+
+  security:
+    input_validation: strict
+    unsafe_functions:
+      loadstring: forbidden
+
+  testing:
+    framework: busted
+    coverage_threshold: 85
+    profiling: required
+
+  documentation:
+    function_headers:
+      params: required
+      returns: required
+      examples: suggested
+    public_api: ldoc
+
+  code_review:
+    required_checks:
+      - error_handling
+      - performance
+      - security
+    complexity_limits:
+      cyclomatic: 15
+      cognitive: 25
+
+  debugging:
+    logging_level: verbose
+    memory_checks: periodic
+
+linting:
+  globals:
+    allowed: [module, class, tick]
+  unused:
+    check_parameters: true
+
+autofixes:
+  variables: snake_case
+  quotes: double
+  end_of_file: newline
+```
+
+## Code Patterns
+
+### Module Structure
+```lua
+-- File: inventory.lua
+local Inventory = {}
+
+function Inventory.new(capacity)
+  local self = setmetatable({}, Inventory)
+  self.items = {}
+  self.capacity = capacity
+  return self
+end
+
+function Inventory:add_item(item)
+  if #self.items >= self.capacity then
+    return false, "inventory_full"
+  end
+  table.insert(self.items, item)
+  return true
+end
+
+function Inventory:_serialize_items()
+  -- Private method implementation
+end
+
+return Inventory
+```
+
+### Coroutine Wrapper
+```lua
+function asyncFetch(url, callback)
+  local co = coroutine.create(function()
+    local result = networkRequest(url)
+    coroutine.yield(result)
+  end)
+  
+  local ok, res = coroutine.resume(co)
+  if not ok then
+    logError(res)
+    callback(nil, res)
+  else
+    callback(res)
+  end
+end
+```
+
+## Enforcement Rules
+<!-- Cursor-Enforce: error -->
+- Global variables (except allowlist)
+- Implicit nil access
+- Missing error handling
+- String concatenation in loops
+- Direct file I/O without wrappers
+
+## Quick Fixes
+<!-- Cursor-Fix: suggest -->
+1. Convert global → local
+2. Add pcall/xpcall wrapper
+3. Replace string.. with table.concat
+4. Generate parameter validation
+5. Create test stub
+6. Extract to module
+
+## Style Exceptions
+<!-- Cursor-Override: warn -->
+- 1-based indexing in matrix operations
+- Global LOVE2D callbacks
+- Short variable names in math-heavy code
+
+This version better aligns with Cursor's .mdc requirements by:
+1. Using proper YAML-like syntax for rule definitions
+2. Separating configuration from code examples
+3. Adding Cursor-specific annotations for enforcement
+4. Including explicit override directives
+5. Maintaining Markdown compatibility with proper fenced blocks
