@@ -1,0 +1,12 @@
+{
+  "Lua.diagnostics.globals": ["love"],
+  "Lua.workspace.library": ["C:/Program Files/LOVE"],
+  "Lua.diagnostics.disable": ["duplicate-doc-field"],
+  "Lua.workspace.ignoreDir": [
+    ".vscode",
+    ".legacy",
+    ".git",
+    ".cursor",
+    "/assets"
+  ]
+}

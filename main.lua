@@ -1,66 +1,99 @@
---This is ALchemical Combinations a game made with löve2d in lua
+-- Main entry point for Alchemical Combinations game
+-- Uses gamestate pattern for managing different game states
 
-local love = require("love")
+-- Import required modules
+local GameState = require("src.gamestate")
+local MainMenu = require("src.gamestate.main_menu")
+local PlayingState = require("src.gamestate.playing")
+local SettingsState = require("src.gamestate.settings")
 
--- Load modules
-local Debug = require("src.core.debug")
-local DebugConsole = require("src.user_interface.components.DebugConsole")
-local UserInput = require("src.user_input.UserInput")
+-- Global state variables
+local current_state = nil
+local game_states = {}
+local should_close = false
 
--- Global references
-local debug_console = nil
-local user_input = nil
+-- LÖVE2D callbacks
 
 function love.load()
-  -- Initialize debug system
-  DebugConsole.init(Debug)
-  user_input = UserInput.init(DebugConsole)
+  -- Initialize game states
+  game_states = {
+    main_menu = MainMenu:new()
+  }
   
-  -- Log game startup
-  Debug.info("Game started - ALchemical Combinations")
-  Debug.debug("Screen resolution: " .. love.graphics.getWidth() .. "x" .. love.graphics.getHeight())
-  Debug.debug("LÖVE version: " .. love.getVersion())
+  -- Start with main menu
+  current_state = game_states.main_menu
   
-  -- Example logs for testing
-  Debug.info("Debug system initialized")
-  Debug.warning("This is a warning test message")
-  Debug.error("This is an error test message")
-  Debug.debug("Press F3 to toggle debug console")
+  -- Initialize random seed
+  math.randomseed(os.time())
+  
+  -- Setup global event listeners
+  love.keyboard.setKeyRepeat(false)
 end
 
 function love.update(dt)
-  -- Update systems
-  DebugConsole.update(dt)
+  -- Cap delta time to avoid physics/logic issues on lag spikes
+  local capped_dt = math.min(dt, 0.1)
   
-  -- Debug performance info
-  if love.timer.getFPS() < 30 then
-    Debug.warning("Low FPS: " .. love.timer.getFPS())
+  -- Update current game state
+  if current_state and current_state.update then
+    current_state:update(capped_dt)
   end
 end
 
 function love.draw()
-  -- Draw game elements here
+  -- Clear screen
+  love.graphics.clear(0.1, 0.1, 0.1)
   
-  -- Draw debug console (should be last to overlay everything)
-  DebugConsole.draw()
-end
-
--- Input handling
-function love.keypressed(key, scancode, isrepeat)
-  user_input.key_pressed(key)
+  -- Draw current game state
+  if current_state and current_state.draw then
+    current_state:draw()
+  end
   
-  -- Debug shortcuts
-  if key == "escape" then
-    Debug.info("Game exiting...")
-    love.event.quit()
+  -- Debug overlay if enabled
+  if game_states.playing and game_states.playing.components and 
+     game_states.playing.components.debug and
+     game_states.playing.components.debug.is_enabled then
+    game_states.playing.components.debug:draw()
   end
 end
 
--- Error handling
-function love.errorhandler(msg)
-  Debug.error("FATAL ERROR: " .. tostring(msg))
+function love.keypressed(key, scancode, isrepeat)
+  -- Global keyboard shortcuts
+  if key == "escape" then
+    if current_state == game_states.main_menu then
+      should_close = true
+      love.event.quit()
+    else
+      -- Return to main menu from other states
+      current_state = game_states.main_menu
+    end
+  end
   
-  -- Let default error handler run after logging
-  return false
+  -- Forward to current state
+  if current_state and current_state.keypressed then
+    current_state:keypressed(key, scancode, isrepeat)
+  end
 end
 
+function love.mousepressed(x, y, button)
+  -- Forward to current state
+  if current_state and current_state.mousepressed then
+    current_state:mousepressed(x, y, button)
+  end
+end
+
+function love.mousereleased(x, y, button)
+  -- Forward to current state
+  if current_state and current_state.mousereleased then
+    current_state:mousereleased(x, y, button)
+  end
+end
+
+function love.quit()
+  -- Allow current state to handle cleanup
+  if current_state and current_state.quit then
+    current_state:quit()
+  end
+  
+  return should_close
+end

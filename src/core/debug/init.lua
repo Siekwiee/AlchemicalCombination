@@ -22,6 +22,7 @@ local LOG_LEVELS = {
 ---@field init fun(default_log_level: number, flag_file_logging: boolean)
 ---@field log_directory string
 ---@field add_default_log_dir fun()
+---@field warning fun(message: string)
 ---@return Debug
 function Debug:new()
     local o = {}
@@ -37,88 +38,139 @@ local log_level = LOG_LEVELS.DEBUG
 local flag_file_logging = true
 
 -- Ensure log directory exists
----@param path? string
----@return string
-local function ensure_log_directory_exists(self, path)
-  if not path and not self.log_directory then
+function Debug:ensure_log_directory_exists(self)
+  if not self.log_directory then
     self:add_default_log_dir()
   end
-  if not path then
-    path = self.log_directory
+  if not love.filesystem.exists(self.log_directory) then
+    love.filesystem.createDirectory(self.log_directory)
   end
-  if not love.filesystem.exists(path) then
-    self:add_default_log_dir()
-  end
-  local result = "Log directory: " .. path
-  return result
 end
 
-local function add_default_log_dir(self)
-  local default_save_directory = love.filesystem.getSaveDirectory()
+---@param path? string
+function Debug:add_default_log_dir(self, path)
+  local default_save_directory
+  if not path then
+    default_save_directory = love.filesystem.getSaveDirectory()
+  else
+    default_save_directory = path
+  end
   local default_log_directory = default_save_directory .. "/log/debug"
-  local log_directory = love.filesystem.createDirectory(default_log_directory)
-  self.log_directory = log_directory
+  love.filesystem.createDirectory(default_log_directory)
+  self.log_directory = default_log_directory
 end
+
 -- Format message with timestamp and level
 
-local function add_timestamp_to_message(level, message)
+function Debug:add_timestamp_to_message(level, message)
   local timestamp = os.date("%Y-%m-%d %H:%M:%S")
   local message_with_timestamp = string.format("[%s][%s] %s", timestamp, level, message)
   return message_with_timestamp
 end
 
 -- Write log to file
-local function write_to_file(self, formatted_message)
-
+---@param formatted_message string
+function Debug:write_to_file(self, formatted_message)
+  if not self.log_directory then
+    self:add_default_log_dir()
+  end
+  
+  local file_path = self.log_directory .. "/debug.log"
+  local success, message = love.filesystem.append(file_path, formatted_message .. "\n")
+  
+  if not success then
+    -- If append fails (likely because file doesn't exist yet), try to write instead
+    success, message = love.filesystem.write(file_path, formatted_message .. "\n")
+    if not success then
+      -- Don't error out, just add a warning log in memory
+      self:add_log("WARNING", "Failed to write to log file: " .. tostring(message))
+    end
+  end
 end
 
 -- Add a log entry to the log history
-local function add_log(level_name, message, level_value)
-
+function Debug:add_log(self, log_level, message)
+  local formatted_message = self:add_timestamp_to_message(log_level, message)
+  
+  -- Initialize log array if not already done
+  if not self.log then
+    self.log = {}
+  end
+  
+  -- Add to in-memory log array
+  table.insert(self.log, formatted_message)
+  
+  -- Write to file if enabled
+  if self.flag_file_logging then
+    -- Use pcall to prevent errors from file operations from crashing the game
+    pcall(function()
+      self:write_to_file(formatted_message)
+    end)
+  end
 end
 
 -- Public API
-
-function Debug.init(default_log_level, flag_file_logging)
+---@param flag_file_logging boolean
+---@param default_log_level string
+---@return Debug
+function Debug.init(flag_file_logging, default_log_level)
   local debug = Debug:new()
-  debug._log_level = default_log_level or LOG_LEVELS.DEBUG
-  debug.flag_file_logging = flag_file_logging or true
+  debug.log = {} -- Initialize log array
+  debug:add_default_log_dir()
+  debug.flag_file_logging = flag_file_logging or false
+  debug.log_level = LOG_LEVELS[default_log_level or "INFO"]
+  return debug
 end
 
-function Debug.info(message)
-  return _add_log("INFO", message, LOG_LEVELS.INFO)
+---@param message string
+function Debug.info(self, message)
+  self:add_log("INFO", message)
 end
 
-function Debug.warning(message)
-  return _add_log("WARNING", message, LOG_LEVELS.WARNING)
+---@param message string
+function Debug.warning(self, message)
+  self:add_log("WARNING", message)
 end
 
-function Debug.error(message)
-  return _add_log("ERROR", message, LOG_LEVELS.ERROR)
+---@param message string
+function Debug.error(self, message)
+  self:add_log("ERROR", message)
 end
 
-function Debug.debug(message)
-  return _add_log("DEBUG", message, LOG_LEVELS.DEBUG)
+---@param message string
+function Debug.debug(self, message)
+  self:add_log("DEBUG", message)
 end
 
-function Debug.get_logs()
-  return _logs
+---@return table<string, string>
+function Debug.get_logs(self)
+  return self.log
 end
 
-function Debug.clear()
-  _logs = {}
+---@param path? string
+function Debug.save_logs(self, path)
+  if not path then
+    love.filesystem.write(self.log_directory, self:get_logs())
+  else
+    self:add_default_log_dir(path)
+    love.filesystem.write(self.log_directory, self:get_logs())
+  end
 end
 
-function Debug.set_log_level(level)
-  _log_level = level
+function Debug.clear(self)
+  self.log = {}
 end
 
-function Debug.set_file_logging(enabled)
-  _file_logging = enabled
+function Debug.set_log_level(self, level)
+  self.log_level = LOG_LEVELS[level]
 end
 
-function Debug.set_max_logs(max)
-  _max_logs = max
+function Debug.set_file_logging(self, enabled)
+  self.flag_file_logging = enabled
+end
+
+function Debug.set_max_logs(self, max)
+  self.max_logs = max
 end
 
 return Debug 
