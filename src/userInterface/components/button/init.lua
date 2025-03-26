@@ -6,7 +6,7 @@ local ButtonViz = require("src.userInterface.components.button.visualization")
 ---@class Button
 local Button = {}
 Button.__index = Button
-
+---TODO: Add check_click function
 ---Creates a new button
 ---@param config table Button configuration with x, y, width, height, text, and on_click properties
 ---@return Button  

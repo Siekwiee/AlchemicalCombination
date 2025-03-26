@@ -1,6 +1,13 @@
 local UIManager = {}
 UIManager.__index = UIManager
 
+---@class UIManager
+---@field game_state GameState
+---@field elements table<string, UIElement>
+---@field new fun(game_state: GameState): UIManager
+---@field update fun(self: UIManager, dt: number)
+---@field draw fun(self: UIManager)
+---@field handle_input fun(self: UIManager, x: number, y: number, button: number)
 function UIManager:new(game_state)
   local self = setmetatable({}, self)
   self.game_state = game_state

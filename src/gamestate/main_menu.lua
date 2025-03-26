@@ -5,7 +5,7 @@ local Button = require("src.userInterface.components.button.init")
 -- Public interface
 function MainMenu:new()
   local menu = setmetatable({}, { __index = MainMenu })
-  
+  menu.state_name = "menu"
   -- Button configuration
   local window_width = love.graphics.getWidth()
   local window_height = love.graphics.getHeight()
