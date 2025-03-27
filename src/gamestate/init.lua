@@ -17,26 +17,25 @@ local GameState = {}
 
 ---@return GameState
 function GameState:new()
-  local o = {}
-  setmetatable(o, { __index = self })
+  setmetatable({}, { __index = GameState })
   
   -- initialize time
-  o.total_time = 0
-  o.dt = 0
+  self.total_time = 0
+  self.dt = 0
   
-  o.states = {}
+  self.states = {}
 
   -- Create game systems 
-  o.debug = Debug:init(true, "DEBUG")
+  self.debug = Debug:init(true, "DEBUG")
   --initialize gamestate
-  o.current_state = MainMenu:new()
+  self.current_state = MainMenu:new()
 
   --TODO Add UIManager
-  o.renderer = Renderer:new()
-  o.input_manager = InputManager:new(o)
+  self.renderer = Renderer:new()
+  self.input_manager = InputManager:new(self)
 
-  o:init()
-  return o
+  self:init()
+  return self
 end
 
 function GameState:init()

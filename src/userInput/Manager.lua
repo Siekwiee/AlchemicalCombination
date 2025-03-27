@@ -4,8 +4,9 @@ local MainMenu = require("src.gamestate.main_menu")
 local InputManager = {}
 InputManager.__index = InputManager
 
+
 ---@class InputManager
----@field new fun(game_state: GameState): InputManager
+---@field new fun(game_state: GameState)
 ---@field keypressed fun(self: InputManager, key: string, scancode: string, isrepeat: boolean)
 ---@field mousepressed fun(self: InputManager, x: number, y: number, button: number)
 ---@field mousereleased fun(self: InputManager, x: number, y: number, button: number)
@@ -161,7 +162,15 @@ function InputManager:handle_mouse_pressed_playing(x, y, button)
 end
 
 function InputManager:handle_mouse_pressed_main_menu(x, y, button)
-  self.game_state.debug:debug("handle_mouse_pressed_main_menu")
+    -- Only handle left mouse button
+    if button ~= 1 then return nil end
+    local ui_buttons = self.game_state.current_state.ui_buttons
+    -- Check if any button was clicked
+    for _, ui_button in ipairs(self.game_state.current_state.ui_buttons) do
+      if ui_button:check_click(x, y, button) then
+        ui_button.on_click()
+      end
+    end
 end
 
 function InputManager:handle_mouse_released_playing(x, y, button)

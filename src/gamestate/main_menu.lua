@@ -1,11 +1,13 @@
 local MainMenu = {}
 -- Import the Button component
 local Button = require("src.userInterface.components.button.init")
-
+local Debug = require("src.core.debug.init")
+local PlayState = require("src.gamestate.play_state")
+local Renderer = require("src.renderer.init")
 -- Public interface
 function MainMenu:new()
-  local menu = setmetatable({}, { __index = MainMenu })
-  menu.state_name = "menu"
+  local self = setmetatable({}, { __index = self })
+  self.state_name = "menu"
   -- Button configuration
   local window_width = love.graphics.getWidth()
   local window_height = love.graphics.getHeight()
@@ -15,20 +17,21 @@ function MainMenu:new()
   local start_y = window_height / 2 - 100
   
   -- Create button instances using our Button component
-  menu.ui_buttons = {}
+  self.ui_buttons = {}
   
   -- Define button data
-  menu.buttons = {
-    { text = "Start Game", action = function() print("Start game clicked") end },
+  self.buttons = {
+    { text = "Start Game", action = function() self.current_state = PlayState:Switchto(self) end },
     { text = "Options", action = function() print("Options clicked") end },
     { text = "Exit", action = function() love.event.quit() end }
   }
   
   -- Create actual button instances
-  for i, btn_data in ipairs(menu.buttons) do
+  for i, btn_data in ipairs(self.buttons) do
     local y_pos = start_y + (i-1) * (button_height + button_spacing)
     
-    menu.ui_buttons[i] = Button:new({
+    self.ui_buttons[i] = Button:new({
+      buttons = self.buttons,
       x = window_width / 2 - button_width / 2,
       y = y_pos,
       width = button_width,
@@ -36,34 +39,26 @@ function MainMenu:new()
       text = btn_data.text,
       on_click = btn_data.action
     })
+    for _, ui_button in ipairs(self.ui_buttons) do
+      Debug.debug(Debug, "MainMenu:ui_buttons " .. ui_button.text)
+    end
   end
   
-  return menu
+  return self
 end
 
 function MainMenu:update(dt)
   -- Update all buttons
+  
   for _, button in ipairs(self.ui_buttons) do
     button:update(dt)
   end
 end
 
 function MainMenu:draw()
-  -- Get window dimensions for centering
-  local window_width = love.graphics.getWidth()
-  local window_height = love.graphics.getHeight()
-  
-  -- Draw title
-  love.graphics.setColor(1, 1, 1, 1)
-  local title = "Main Menu"
-  local font = love.graphics.getFont()
-  local title_width = font:getWidth(title) * 2  -- Assuming we want the title larger
-  love.graphics.print(title, window_width / 2 - title_width / 2, window_height / 4, 0, 2, 2)
-  
-  -- Draw all buttons
-  for _, button in ipairs(self.ui_buttons) do
-    button:draw()
-  end
+  -- init Renderer
+  self.renderer = Renderer:new(MainMenu)
+  self.renderer:draw()
 end
 
 function MainMenu:mousepressed(x, y, button)

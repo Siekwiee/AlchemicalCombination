@@ -1,8 +1,10 @@
-local UiManager = require("src.user.interface.Manager")
+local UiManager = require("src.userInterface.Manager")
 
-local Renderer = require("src.renderer.init")
+local UI = {}
 
-function Renderer:drawUI()
+---@class UI
+---@field drawUI fun(self: UI)
+function UI:drawUI()
     --draw ui
     UiManager:draw()
     --draw the fps counter
@@ -10,5 +12,5 @@ function Renderer:drawUI()
     love.graphics.print(string.format("FPS: %d", love.timer.getFPS()), 10, 10)
 end
 
-return Renderer
+return UI
 

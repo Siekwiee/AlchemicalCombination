@@ -1,30 +1,35 @@
+local Debug = require("src.core.debug.init")
+---@class ButtonCore
+---@field check_click fun(button: Button, x: number, y: number, mouse_button: number): boolean
+---@field update_state fun(button: Button, x: number, y: number): boolean
 -- Button Core Logic
 local ButtonCore = {}
 
+
 function ButtonCore.check_click(button, x, y, mouse_button)
   -- Default to left mouse button if not specified
-  mouse_button = mouse_button or 1
-  
-  -- Check if point is within button boundaries
+  if mouse_button ~= 1 then
+    return false
+  end
+  Debug.debug(Debug, "ButtonCore:check_click " .. button.width .. " " .. button.height .. " " .. button.x .. " " .. button.y .. " " .. x .. ", " .. y .. ", " .. mouse_button)
   if x >= button.x and x <= button.x + button.width and
-     y >= button.y and y <= button.y + button.height then
-    -- Call the on_click callback if provided
-    if button.on_click then
-      button.on_click(button)
-    end
+   y >= button.y and y <= button.y + button.height then
     return true
   end
-  
+
   return false
 end
+---@class Button
+---@param button Button
+function ButtonCore.update_state(button, mx, my)
+  -- TODO:
+  local hover = false
+  if mx and my then
+    hover = mx >= button.x and mx <= button.x + button.width and
+                   my >= button.y and my <= button.y + button.height
+  end
 
-function ButtonCore.update_state(button, x, y)
-  -- Update hover state
-  button.hover = x and y and 
-                 x >= button.x and x <= button.x + button.width and
-                 y >= button.y and y <= button.y + button.height
-  
-  return button.hover
+  return hover
 end
 
 return ButtonCore
