@@ -7,12 +7,37 @@ local GridCellCore = require("src.core.grid_cell.core")
 local GridCellVisualization = require("src.core.grid_cell.visualization")
 
 -- Forward function declarations
-GridCell.new = GridCellCore.new
-GridCell.update = GridCellCore.update
-GridCell.contains_point = GridCellCore.contains_point
-GridCell.add_item = GridCellCore.add_item
-GridCell.remove_item = GridCellCore.remove_item
-GridCell.has_item = GridCellCore.has_item
-GridCell.draw = GridCellVisualization.draw
+function GridCell.new(config)
+  local cell = GridCellCore.new(config)
+  return setmetatable(cell, GridCell)
+end
+
+function GridCell:update(mx, my)
+  return GridCellCore.update(self, mx, my)
+end
+
+function GridCell:contains_point(x, y)
+  return GridCellCore.contains_point(self, x, y)
+end
+
+function GridCell:add_item(item)
+  return GridCellCore.add_item(self, item)
+end
+
+function GridCell:remove_item()
+  return GridCellCore.remove_item(self)
+end
+
+function GridCell:has_item()
+  return GridCellCore.has_item(self)
+end
+
+function GridCell:get_item()
+  return self.item
+end
+
+function GridCell:draw()
+  return GridCellVisualization.draw(self)
+end
 
 return GridCell

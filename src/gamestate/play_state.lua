@@ -4,6 +4,7 @@ local love = require("love")
 local Renderer = require("src.renderer.init")
 local UIModularGrid = require("src.userInterface.components.modular_grid.init")
 local InputManager = require("src.userInput.Manager")
+local ItemManager = require("src.core.items.manager")
 
 local PlayState = {}
 
@@ -32,10 +33,9 @@ function PlayState:new()
 end
 
 function PlayState:init()
-    Debug.debug(Debug, "PlayState:init - Initializing play state")
-    
     -- Initialize components
     self.components.debug = Debug
+    self.components.item_manager = ItemManager:new()
     
     -- Initialize input manager
     self.input_manager = InputManager:new(self)
@@ -46,8 +46,6 @@ function PlayState:init()
     local grid_x = (screen_width - grid_width) / 2
     local grid_y = (screen_height - grid_height) / 2
     
-    Debug.debug(Debug, "PlayState:init - Creating modular grid at " .. grid_x .. ", " .. grid_y)
-    
     self.components.modular_grid = UIModularGrid:new({
         x = grid_x,
         y = grid_y,
@@ -56,48 +54,24 @@ function PlayState:init()
         cell_width = 64,
         cell_height = 64,
         spacing = 8,
-        title = "Alchemical Grid"
+        title = nil
     })
-    
-    if not self.components.modular_grid then
-        Debug.debug(Debug, "PlayState:init - ERROR: Failed to create modular grid")
-    elseif not self.components.modular_grid.core then
-        Debug.debug(Debug, "PlayState:init - ERROR: Modular grid has no core")
-    elseif not self.components.modular_grid.core.draw then 
-        Debug.debug(Debug, "PlayState:init - ERROR: Modular grid core has no draw function")
-    else
-        Debug.debug(Debug, "PlayState:init - Successfully created modular grid")
-    end
     
     -- Add some sample items for testing
     self:add_sample_items()
 end
 
 function PlayState:add_sample_items()
-    -- Add some sample items to the grid
-    self.components.modular_grid:add_item(1, 1, {
-        type = "water",
-        name = "Water",
-        level = 1
-    })
+    -- Add basic items from our item manager
+    local items = {"water", "fire", "earth", "air"}
     
-    self.components.modular_grid:add_item(1, 4, {
-        type = "fire",
-        name = "Fire",
-        level = 1
-    })
+    -- Place the items in the corners of the grid
+    self.components.modular_grid:add_item(1, 1, self.components.item_manager:create_item("water"))
+    self.components.modular_grid:add_item(1, 4, self.components.item_manager:create_item("fire"))
+    self.components.modular_grid:add_item(4, 1, self.components.item_manager:create_item("earth"))
+    self.components.modular_grid:add_item(4, 4, self.components.item_manager:create_item("air"))
     
-    self.components.modular_grid:add_item(4, 1, {
-        type = "earth",
-        name = "Earth",
-        level = 1
-    })
-    
-    self.components.modular_grid:add_item(4, 4, {
-        type = "air",
-        name = "Air",
-        level = 1
-    })
+    Debug.debug(Debug, "PlayState:add_sample_items - Added basic items to grid")
 end
 
 function PlayState:update(dt)
@@ -113,30 +87,13 @@ function PlayState:update(dt)
 end
 
 function PlayState:draw()
-    Debug.debug(Debug, "PlayState:draw - Starting draw")
-    
     -- Initialize renderer
     self.renderer = Renderer:new()
     self.renderer:draw(self.state_name, self)
     
-    -- Draw modular grid directly, bypassing the UI manager if needed
-    if self.components.modular_grid then
-        Debug.debug(Debug, "PlayState:draw - Drawing modular grid directly")
-        
-        -- Ensure modular grid has core component
-        if not self.components.modular_grid.core then
-            Debug.debug(Debug, "PlayState:draw - ERROR: Modular grid has no core")
-            return
-        end
-        
-        -- Try to draw the grid directly without going through the UI layer
-        if type(self.components.modular_grid.core.draw) == "function" then
-            self.components.modular_grid.core:draw()
-        else
-            Debug.debug(Debug, "PlayState:draw - ERROR: Modular grid core.draw is not a function")
-        end
-    else
-        Debug.debug(Debug, "PlayState:draw - ERROR: No modular grid to draw")
+    -- Draw modular grid directly
+    if self.components.modular_grid and self.components.modular_grid.core then
+        self.components.modular_grid:draw()
     end
 end
 
@@ -147,25 +104,44 @@ function PlayState:keypressed(key, scancode, isrepeat)
         if self.components.modular_grid then
             self.components.modular_grid:toggle()
         end
+    elseif key == "d" then
+        -- Toggle debug overlay
+        if self.components.debug then
+            self.components.debug:toggle()
+        end
     end
 end
 
 function PlayState:mousepressed(x, y, button)
-    -- Forward to modular grid first
-    if self.components.modular_grid and self.components.modular_grid:handle_mouse_pressed(x, y, button) then
-        return
+    print("PlayState:mousepressed - Button " .. button .. " at " .. x .. "," .. y)
+    
+    -- Check if we have a modular grid
+    if not self.components.modular_grid then
+        print("PlayState:mousepressed - No modular grid")
+        return false
     end
     
-    -- Handle other mouse press events
+    -- Forward to modular grid without additional checks
+    print("PlayState:mousepressed - Forwarding directly to grid")
+    local result = self.components.modular_grid:handle_mouse_pressed(x, y, button)
+    print("PlayState:mousepressed - Grid returned: " .. tostring(result))
+    return result
 end
 
 function PlayState:mousereleased(x, y, button)
-    -- Forward to modular grid first
-    if self.components.modular_grid and self.components.modular_grid:handle_mouse_released(x, y, button) then
-        return
+    print("PlayState:mousereleased - Button " .. button .. " at " .. x .. "," .. y)
+    
+    -- Check if we have a modular grid
+    if not self.components.modular_grid then
+        print("PlayState:mousereleased - No modular grid")
+        return false
     end
     
-    -- Handle other mouse release events
+    -- Forward to modular grid without additional checks
+    print("PlayState:mousereleased - Forwarding directly to grid")
+    local result = self.components.modular_grid:handle_mouse_released(x, y, button)
+    print("PlayState:mousereleased - Grid returned: " .. tostring(result))
+    return result
 end
 
 function PlayState:Switchto()

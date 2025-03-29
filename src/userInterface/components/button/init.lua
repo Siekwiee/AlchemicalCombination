@@ -22,9 +22,7 @@ function Button:new(config)
     setmetatable(o, {__index = self})
     -- Required properties
     if config.buttons then
-        local a = unpack(config.buttons)
         o.buttons = config.buttons or {}
-        Debug.debug(Debug, "Button:new " .. table.concat(a, ", "))
     end
     o.x = config.x or 0
     o.y = config.y or 0

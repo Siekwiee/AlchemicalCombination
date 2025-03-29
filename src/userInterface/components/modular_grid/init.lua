@@ -22,8 +22,6 @@ function UIModularGrid:new(config)
   grid.visible = config.visible or true
   grid.enabled = config.enabled or true
   
-  Debug.debug(Debug, "UIModularGrid:new: Created grid UI component")
-  
   return grid
 end
 
@@ -41,17 +39,38 @@ end
 ---Draws the grid
 function UIModularGrid:draw()
   if not self.visible then
-    Debug.debug(Debug, "UIModularGrid:draw - Hidden, not drawing")
     return
   end
   
   if not self.core then
-    Debug.debug(Debug, "UIModularGrid:draw: Error - self.core is nil")
     return
   end
   
   -- Use the visualization module directly instead of relying on forwarded methods
   ModularGridVisualization.draw(self.core)
+end
+
+---Adds an item to a cell at the specified row and column
+---@param row number The row index (1-based)
+---@param col number The column index (1-based)
+---@param item table The item to add
+---@return boolean Whether the item was successfully added
+function UIModularGrid:add_item(row, col, item)
+  if not self.core then
+    return false
+  end
+  return self.core:add_item(row, col, item)
+end
+
+---Removes an item from a cell at the specified row and column
+---@param row number The row index (1-based)
+---@param col number The column index (1-based)
+---@return table|nil The removed item, or nil if there was no item
+function UIModularGrid:remove_item(row, col)
+  if not self.core then
+    return nil
+  end
+  return self.core:remove_item(row, col)
 end
 
 ---Handles mouse pressed events
@@ -64,7 +83,8 @@ function UIModularGrid:handle_mouse_pressed(x, y, button)
     return false
   end
   
-  return ModularGridCore.handle_mouse_pressed(self.core, x, y, button)
+  -- Forward to the core grid
+  return self.core:handle_mouse_pressed(x, y, button)
 end
 
 ---Handles mouse released events
@@ -77,27 +97,25 @@ function UIModularGrid:handle_mouse_released(x, y, button)
     return false
   end
   
-  return ModularGridCore.handle_mouse_released(self.core, x, y, button)
+  -- Forward to the core grid
+  return self.core:handle_mouse_released(x, y, button)
 end
 
 ---Toggles grid visibility
 function UIModularGrid:toggle()
   self.visible = not self.visible
-  Debug.debug(Debug, "UIModularGrid:toggle: Visibility set to " .. tostring(self.visible))
 end
 
 ---Sets grid visibility
 ---@param visible boolean Whether the grid should be visible
 function UIModularGrid:set_visible(visible)
   self.visible = visible
-  Debug.debug(Debug, "UIModularGrid:set_visible: Visibility set to " .. tostring(self.visible))
 end
 
 ---Sets grid enabled state
 ---@param enabled boolean Whether the grid should be enabled
 function UIModularGrid:set_enabled(enabled)
   self.enabled = enabled
-  Debug.debug(Debug, "UIModularGrid:set_enabled: Enabled set to " .. tostring(self.enabled))
 end
 
 ---Gets the grid cell at the specified row and column
@@ -106,23 +124,6 @@ end
 ---@return table|nil The cell at the specified position, or nil if out of bounds
 function UIModularGrid:get_cell_at(row, col)
   return self.core:get_cell_at(row, col)
-end
-
----Adds an item to a cell at the specified row and column
----@param row number The row index (1-based)
----@param col number The column index (1-based)
----@param item table The item to add
----@return boolean Whether the item was successfully added
-function UIModularGrid:add_item(row, col, item)
-  return self.core:add_item(row, col, item)
-end
-
----Removes an item from a cell at the specified row and column
----@param row number The row index (1-based)
----@param col number The column index (1-based)
----@return table|nil The removed item, or nil if there was no item
-function UIModularGrid:remove_item(row, col)
-  return self.core:remove_item(row, col)
 end
 
 return UIModularGrid

@@ -1,6 +1,7 @@
 local Debug = require("src.core.debug.init")
 local GridCell = require("src.core.grid_cell.init")
 local love = require("love")
+local ItemManager = require("src.core.items.manager")
 
 local ModularGridCore = {}
 
@@ -23,10 +24,13 @@ function ModularGridCore.new(config)
   grid.width = (grid.cell_width + grid.spacing) * grid.cols - grid.spacing
   grid.height = (grid.cell_height + grid.spacing) * grid.rows - grid.spacing
   
+  -- Initialize item manager
+  grid.item_manager = ItemManager:new()
+  
   -- Optional properties
   grid.active_cell = nil
-  grid.drag_source = nil
-  grid.drag_item = nil
+  grid.selected_cell = nil
+  grid.title = config.title or nil
   
   -- Initialize cells
   grid.cells = {}
@@ -34,14 +38,16 @@ function ModularGridCore.new(config)
     for col = 1, grid.cols do
       local cell_x = grid.x + (col - 1) * (grid.cell_width + grid.spacing)
       local cell_y = grid.y + (row - 1) * (grid.cell_height + grid.spacing)
-      local id = "cell_" .. row .. "_" .. col
+      local id = row .. "," .. col
       
       grid.cells[id] = GridCell.new({
         x = cell_x,
         y = cell_y,
         width = grid.cell_width,
         height = grid.cell_height,
-        id = id
+        id = id,
+        row = row,
+        col = col
       })
     end
   end
@@ -57,6 +63,10 @@ end
 ---@param my number Mouse y position
 ---@param dt number Delta time
 function ModularGridCore.update(grid, mx, my, dt)
+  if not mx or not my then
+    mx, my = love.mouse.getPosition()
+  end
+
   -- Reset active cell
   grid.active_cell = nil
   
@@ -67,20 +77,6 @@ function ModularGridCore.update(grid, mx, my, dt)
     if cell.hover then
       grid.active_cell = cell
     end
-  end
-  
-  -- Handle drag and drop logic
-  if grid.drag_item and grid.active_cell and not love.mouse.isDown(1) then
-    -- Attempt to place the dragged item
-    if not grid.active_cell:has_item() then
-      grid.active_cell:add_item(grid.drag_item)
-    else
-      -- If the target cell has an item, attempt to combine
-      ModularGridCore.combine_items(grid, grid.drag_source, grid.active_cell)
-    end
-    
-    grid.drag_item = nil
-    grid.drag_source = nil
   end
 end
 
@@ -94,7 +90,7 @@ function ModularGridCore.get_cell_at(grid, row, col)
     return nil
   end
   
-  local id = "cell_" .. row .. "_" .. col
+  local id = row .. "," .. col
   return grid.cells[id]
 end
 
@@ -125,6 +121,15 @@ function ModularGridCore.add_item(grid, row, col, item)
   if not cell then
     Debug.debug(Debug, "ModularGridCore.add_item: Invalid cell position")
     return false
+  end
+  
+  -- If we receive just an item ID or name, convert it to a full item object
+  if type(item) == "string" then
+    item = grid.item_manager:create_item(item)
+    if not item then
+      Debug.debug(Debug, "ModularGridCore.add_item: Failed to create item from ID: " .. tostring(item))
+      return false
+    end
   end
   
   return cell:add_item(item)
@@ -165,39 +170,14 @@ function ModularGridCore.combine_items(grid, source_cell, target_cell)
     return false
   end
   
-  -- Example combination logic - can be expanded based on game rules
-  if source_item.type == target_item.type then
-    -- Simple upgrade: same types combine to level up
-    if target_item.level then
-      target_item.level = target_item.level + 1
-      Debug.debug(Debug, "ModularGridCore.combine_items: Upgraded item to level " .. target_item.level)
-    end
-    
-    -- Remove the source item
-    source_cell:remove_item()
-    return true
-  end
+  -- Use the item manager to find a valid combination
+  local result = grid.item_manager:combine(source_item, target_item)
   
-  -- Check for special combinations based on item properties
-  -- This can be expanded with a recipe system
-  local combined_item = nil
-  
-  -- Example: combining water and fire creates steam
-  if (source_item.type == "water" and target_item.type == "fire") or
-     (source_item.type == "fire" and target_item.type == "water") then
-    combined_item = {
-      type = "steam",
-      name = "Steam",
-      level = 1
-    }
-  end
-  
-  if combined_item then
+  if result then
     -- Replace target item with the combined result
     target_cell:remove_item()
-    target_cell:add_item(combined_item)
+    target_cell:add_item(result)
     source_cell:remove_item()
-    Debug.debug(Debug, "ModularGridCore.combine_items: Created new item " .. combined_item.name)
     return true
   end
   
@@ -212,26 +192,192 @@ end
 ---@param button number The mouse button that was pressed
 ---@return boolean Whether the input was handled
 function ModularGridCore.handle_mouse_pressed(grid, x, y, button)
+  -- Only handle left clicks
   if button ~= 1 then
     return false
   end
   
-  local cell = ModularGridCore.get_cell_by_position(grid, x, y)
-  if not cell then
+  -- DIRECT CONSOLE OUTPUT
+  print("----- CLICK EVENT -----")
+  print("Mouse clicked at (" .. x .. "," .. y .. ") with button " .. button)
+  print("Grid position: (" .. grid.x .. "," .. grid.y .. "), dimensions: " .. grid.width .. "x" .. grid.height)
+  
+  -- Debug the item_manager
+  if not grid.item_manager then
+    print("ERROR: Grid has NO ITEM MANAGER!")
+    -- Create one immediately
+    print("Creating emergency item manager")
+    local ItemManager = require("src.core.items.manager")
+    grid.item_manager = ItemManager:new()
+  else
+    print("Grid has item manager: " .. tostring(grid.item_manager))
+    if grid.item_manager.combine then
+      print("Item manager has combine method")
+    else
+      print("ERROR: Item manager has NO combine method!")
+    end
+  end
+  
+  print("Current selected cell: " .. (grid.selected_cell and grid.selected_cell.id or "none"))
+  
+  -- Check if click is within grid bounds
+  if x < grid.x or x > grid.x + grid.width or y < grid.y or y > grid.y + grid.height then
+    print("Click OUTSIDE grid bounds")
+    if grid.selected_cell then
+      print("Clearing selection (was " .. grid.selected_cell.id .. ")")
+      grid.selected_cell.active = false
+      grid.selected_cell = nil
+    end
+    return false
+  else
+    print("Click INSIDE grid bounds")
+  end
+  
+  -- Find which cell was clicked
+  local clicked_cell = nil
+  for id, cell in pairs(grid.cells) do
+    print("Testing cell " .. id .. " at (" .. cell.x .. "," .. cell.y .. ") size " .. cell.width .. "x" .. cell.height)
+    if x >= cell.x and x < cell.x + cell.width and
+       y >= cell.y and y < cell.y + cell.height then
+      clicked_cell = cell
+      print("FOUND clicked cell: " .. id)
+      break
+    end
+  end
+  
+  -- If no cell was found (shouldn't happen but just in case)
+  if not clicked_cell then
+    print("ERROR: No cell found at click position despite being in grid bounds!")
     return false
   end
   
-  Debug.debug(Debug, "ModularGridCore.handle_mouse_pressed: Selected cell " .. cell.id)
+  -- If clicked cell has no item
+  if not clicked_cell.item then
+    print("Clicked cell " .. clicked_cell.id .. " has NO ITEM")
+    if grid.selected_cell then
+      print("Clearing selection (was " .. grid.selected_cell.id .. ")")
+      grid.selected_cell.active = false
+      grid.selected_cell = nil
+    end
+    return true
+  else
+    print("Clicked cell " .. clicked_cell.id .. " has item: " .. (clicked_cell.item.name or "unnamed"))
+  end
   
-  -- Start drag if the cell has an item
-  if cell:has_item() then
-    grid.drag_source = cell
-    grid.drag_item = cell.item
-    cell.active = true
+  -- If no cell is currently selected, select this one
+  if not grid.selected_cell then
+    print("SELECTING cell " .. clicked_cell.id)
+    grid.selected_cell = clicked_cell
+    clicked_cell.active = true
     return true
   end
   
-  return false
+  -- If this is the same cell as already selected, deselect it
+  if grid.selected_cell and grid.selected_cell.id == clicked_cell.id then
+    print("DESELECTING cell " .. clicked_cell.id .. " (already selected)")
+    grid.selected_cell.active = false
+    grid.selected_cell = nil
+    return true
+  end
+  
+  -- At this point we have a valid source cell (grid.selected_cell) and target cell (clicked_cell)
+  if grid.selected_cell then
+    print("READY TO COMBINE: " .. grid.selected_cell.id .. " + " .. clicked_cell.id)
+    
+    -- Attempt to combine items
+    print("COMBINING cells: " .. grid.selected_cell.id .. " + " .. clicked_cell.id)
+    print("Items: " .. (grid.selected_cell.item and grid.selected_cell.item.name or "nil") .. " + " 
+         .. (clicked_cell.item and clicked_cell.item.name or "nil"))
+  end
+  
+  -- Try to combine items
+  if not grid.item_manager then
+    print("ERROR: No item manager found!")
+    return false
+  end
+  
+  -- Ensure both cells have valid items
+  if not grid.selected_cell.item then
+    print("ERROR: Source cell has no item!")
+    grid.selected_cell.active = false
+    grid.selected_cell = nil
+    return true
+  end
+  
+  if not clicked_cell.item then
+    print("ERROR: Target cell has no item!")
+    grid.selected_cell.active = false
+    grid.selected_cell = nil
+    return true
+  end
+  
+  -- Manually check for and implement hardcoded basic combinations for debugging
+  local combination_result = nil
+  
+  -- Try pcall with the item_manager
+  local success, result = pcall(function()
+    return grid.item_manager:combine(grid.selected_cell.item, clicked_cell.item)
+  end)
+  
+  if not success then
+    print("ERROR in combine call: " .. tostring(result))
+    
+    -- Emergency fallback for basic elements
+    local source_id = grid.selected_cell.item.id
+    local target_id = clicked_cell.item.id
+    
+    print("Trying emergency fallback combination for " .. source_id .. " + " .. target_id)
+    
+    -- Hard-coded fallback combinations
+    local ids = {source_id, target_id}
+    table.sort(ids)
+    local combo_key = ids[1] .. "+" .. ids[2]
+    
+    local hardcoded_combinations = {
+      ["air+fire"] = {id = "energy", name = "Energy", color = {1.0, 0.8, 0.0, 1.0}},
+      ["earth+water"] = {id = "mud", name = "Mud", color = {0.4, 0.3, 0.2, 1.0}},
+      ["fire+water"] = {id = "steam", name = "Steam", color = {0.8, 0.8, 0.8, 0.7}},
+      ["earth+fire"] = {id = "lava", name = "Lava", color = {0.9, 0.4, 0.0, 1.0}}
+    }
+    
+    combination_result = hardcoded_combinations[combo_key]
+    if combination_result then
+      print("EMERGENCY: Found hardcoded combination: " .. combination_result.name)
+    else
+      print("No hardcoded combination found")
+    end
+  else
+    combination_result = result
+    if combination_result then
+      print("COMBINATION SUCCESSFUL! Created: " .. (combination_result.name or "unnamed"))
+    else
+      print("Combination FAILED - no recipe found")
+    end
+  end
+  
+  if combination_result then
+    -- We have a successful combination!
+    
+    -- Remove source item
+    print("Removing item from source cell " .. grid.selected_cell.id)
+    grid.selected_cell.item = nil
+    
+    -- Replace target item with result
+    print("Setting result in target cell " .. clicked_cell.id)
+    clicked_cell.item = combination_result
+    
+    print("COMBINATION COMPLETE!")
+  else
+    print("Combination did not produce a result")
+  end
+  
+  -- Clear selection regardless of outcome
+  print("Clearing selection")
+  grid.selected_cell.active = false
+  grid.selected_cell = nil
+  
+  print("----- END CLICK EVENT -----")
+  return true
 end
 
 ---Handles mouse release on the grid
@@ -241,43 +387,8 @@ end
 ---@param button number The mouse button that was released
 ---@return boolean Whether the input was handled
 function ModularGridCore.handle_mouse_released(grid, x, y, button)
-  if button ~= 1 or not grid.drag_item then
-    return false
-  end
-  
-  local cell = ModularGridCore.get_cell_by_position(grid, x, y)
-  if not cell then
-    -- If released outside the grid, return the item to its source
-    if grid.drag_source then
-      grid.drag_source.active = false
-      grid.drag_item = nil
-      grid.drag_source = nil
-    end
-    return false
-  end
-  
-  Debug.debug(Debug, "ModularGridCore.handle_mouse_released: Released on cell " .. cell.id)
-  
-  -- If released on a different cell
-  if cell ~= grid.drag_source then
-    if not cell:has_item() then
-      -- Place item in empty cell
-      cell:add_item(grid.drag_item)
-      grid.drag_source:remove_item()
-    else
-      -- Try to combine items
-      ModularGridCore.combine_items(grid, grid.drag_source, cell)
-    end
-  end
-  
-  -- Reset drag state
-  if grid.drag_source then
-    grid.drag_source.active = false
-  end
-  grid.drag_item = nil
-  grid.drag_source = nil
-  
-  return true
+  -- No special handling needed for mouse release in click-based system
+  return false
 end
 
 return ModularGridCore 

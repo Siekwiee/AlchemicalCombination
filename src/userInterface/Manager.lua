@@ -56,24 +56,16 @@ end
 
 function UIManager:draw()
   -- Draw all UI elements
-  Debug.debug(Debug, "UIManager:draw - Starting draw")
   if self.elements and self.elements.menu_buttons then
-    Debug.debug(Debug, "UIManager:draw - Found menu_buttons, count: " .. #self.elements.menu_buttons)
     for _, button in ipairs(self.elements.menu_buttons) do
       if button.draw then
-        Debug.debug(Debug, "UIManager:draw - Drawing button: " .. (button.text or "unnamed"))
         button:draw()
-      else
-        Debug.debug(Debug, "UIManager:draw - Button has no draw method")
       end
     end
-  else
-    Debug.debug(Debug, "UIManager:draw - No menu_buttons to draw")
   end
   
   -- Draw modular grid
   if self.elements.modular_grid and self.elements.modular_grid.draw then
-    Debug.debug(Debug, "UIManager:draw - Drawing modular grid")
     self.elements.modular_grid:draw()
   end
 end
@@ -82,7 +74,6 @@ function UIManager:handle_mouse_pressed(x, y, button)
   -- Handle modular grid first if it exists
   if self.elements.modular_grid and self.elements.modular_grid.handle_mouse_pressed then
     if self.elements.modular_grid:handle_mouse_pressed(x, y, button) then
-      Debug.debug(Debug, "UIManager:handle_mouse_pressed - Handled by modular grid")
       return true
     end
   end
@@ -90,7 +81,6 @@ function UIManager:handle_mouse_pressed(x, y, button)
   -- Handle mouse input for other UI elements
   for name, element in pairs(self.elements) do
     if name ~= "modular_grid" and element.check_click and element:check_click(x, y, button) then
-      Debug.debug(Debug, "UIManager:handle_mouse_pressed - Handled by element: " .. name)
       return true -- Input was handled by UI
     end
   end

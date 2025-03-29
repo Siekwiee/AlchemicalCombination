@@ -10,14 +10,8 @@ function ModularGridVisualization.draw(grid)
   local r, g, b, a = love.graphics.getColor()
   
   -- Draw grid background
-  love.graphics.setColor(0.15, 0.15, 0.15, 0.5)
-  love.graphics.rectangle(
-    "fill", 
-    grid.x - grid.spacing, 
-    grid.y - grid.spacing, 
-    grid.width + grid.spacing * 2, 
-    grid.height + grid.spacing * 2
-  )
+  love.graphics.setColor(0.2, 0.2, 0.2, 1)
+  love.graphics.rectangle("fill", grid.x, grid.y, grid.width, grid.height)
   
   -- Draw grid border
   love.graphics.setColor(0.6, 0.6, 0.6, 1)
@@ -37,47 +31,41 @@ function ModularGridVisualization.draw(grid)
   
   -- Draw each cell
   for id, cell in pairs(grid.cells) do
-    -- Instead of using cell:draw() which doesn't exist, use the visualization module directly
-    GridCellVisualization.draw(cell)
-  end
-  
-  -- Draw dragged item if any
-  if grid.drag_item then
-    local mx, my = love.mouse.getPosition()
-    
-    -- Draw item centered on mouse
-    love.graphics.setColor(1, 1, 1, 0.8)
-    if grid.drag_item.texture then
-      love.graphics.draw(
-        grid.drag_item.texture,
-        mx - grid.drag_item.texture:getWidth() / 2,
-        my - grid.drag_item.texture:getHeight() / 2
-      )
+    -- Draw cell background
+    if cell == grid.selected_cell then
+      -- Selected cell gets a bright highlight
+      love.graphics.setColor(1, 0.8, 0.2, 1) -- Bright gold
+    elseif cell.hover then
+      -- Hovered cell gets a subtle highlight
+      love.graphics.setColor(0.4, 0.4, 0.5, 1)
     else
-      -- Draw placeholder
-      love.graphics.setColor(1, 0.8, 0.3, 0.8)
-      love.graphics.rectangle(
-        "fill",
-        mx - grid.cell_width * 0.3,
-        my - grid.cell_height * 0.3,
-        grid.cell_width * 0.6,
-        grid.cell_height * 0.6
-      )
-      
-      -- Draw item name if available
-      if grid.drag_item.name then
-        love.graphics.setColor(0, 0, 0, 1)
-        local font = love.graphics.getFont()
-        local text_width = font:getWidth(grid.drag_item.name)
-        local text_x = mx - text_width / 2
-        local text_y = my - font:getHeight() / 2
-        
-        love.graphics.print(grid.drag_item.name, text_x, text_y)
-      end
+      love.graphics.setColor(0.3, 0.3, 0.3, 1)
+    end
+    love.graphics.rectangle("fill", cell.x, cell.y, cell.width, cell.height)
+    
+    -- Draw cell border
+    if cell == grid.selected_cell then
+      -- Selected cell gets a thick bright border
+      love.graphics.setColor(1, 1, 0, 1) -- Bright yellow
+      love.graphics.setLineWidth(3)
+    else
+      love.graphics.setColor(0.4, 0.4, 0.4, 1)
+      love.graphics.setLineWidth(1)
+    end
+    love.graphics.rectangle("line", cell.x, cell.y, cell.width, cell.height)
+    love.graphics.setLineWidth(1) -- Reset line width
+    
+    -- Draw cell contents
+    if cell.item then
+      -- Draw item
+      love.graphics.setColor(1, 1, 1, 1)
+      love.graphics.printf(cell.item.name or "???", 
+        cell.x, cell.y + cell.height/2 - 10, 
+        cell.width, "center")
     end
   end
   
-  -- Restore original color
+  -- Reset color
   love.graphics.setColor(r, g, b, a)
 end
 

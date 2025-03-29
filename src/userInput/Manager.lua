@@ -39,6 +39,10 @@ function InputManager:new(game_state)
     craft = "c",
     debug = "f3"
   }
+  
+  -- For logging control
+  self.log_mouse_events = false
+  
   return self
 end
 
@@ -58,8 +62,20 @@ function InputManager:mousepressed(x, y, button)
   self.mouse.buttons.pressed[button] = true
   self.mouse.buttons.down[button] = true
   
-  -- Forward to UI manager first
+  -- DIRECT DEBUG OUTPUT
+  print("InputManager received mouse press at " .. x .. "," .. y .. " with button " .. button)
+  
+  -- If we're in the play state, forward directly to the play state's handlers
+  if self.game_state.current_state and self.game_state.current_state.state_name == "playstate" then
+    print("Forwarding directly to play state")
+    if self.game_state.current_state.mousepressed then
+      return self.game_state.current_state:mousepressed(x, y, button)
+    end
+  end
+  
+  -- Forward to UI manager if available
   if self.game_state.ui_manager and self.game_state.ui_manager:handle_mouse_pressed(x, y, button) then
+    print("UI manager handled mouse press")
     return -- UI handled the input
   end
   
@@ -72,8 +88,20 @@ function InputManager:mousereleased(x, y, button)
   self.mouse.buttons.released[button] = true
   self.mouse.buttons.down[button] = false
   
-  -- Forward to UI manager first
+  -- DIRECT DEBUG OUTPUT
+  print("InputManager received mouse release at " .. x .. "," .. y .. " with button " .. button)
+  
+  -- If we're in the play state, forward directly to the play state's handlers
+  if self.game_state.current_state and self.game_state.current_state.state_name == "playstate" then
+    print("Forwarding directly to play state")
+    if self.game_state.current_state.mousereleased then
+      return self.game_state.current_state:mousereleased(x, y, button)
+    end
+  end
+  
+  -- Forward to UI manager if available
   if self.game_state.ui_manager and self.game_state.ui_manager:handle_mouse_released(x, y, button) then
+    print("UI manager handled mouse release")
     return -- UI handled the input
   end
   
@@ -124,34 +152,39 @@ function InputManager:keypressed(key, scancode, isrepeat)
   end
   
   if key == self.key_bindings.debug then
-    if self.game_state.components.debug then
+    if self.game_state.components and self.game_state.components.debug then
       self.game_state.components.debug:toggle()
     end
+    -- Toggle logging of mouse events
+    self.log_mouse_events = not self.log_mouse_events
+    Debug.debug(Debug, "Mouse event logging " .. (self.log_mouse_events and "enabled" or "disabled"))
     return
   end
   
   -- Forward to UI manager first
-  if self.game_state.ui_manager:handle_input() then
+  if self.game_state.ui_manager and self.game_state.ui_manager:handle_input() then
     return -- UI handled the input
   end
   
   -- Handle other gameplay keys
   if key == self.key_bindings.inventory then
     -- Toggle inventory
-    if self.game_state.components.inventory then
+    if self.game_state.components and self.game_state.components.inventory then
       self.game_state.components.inventory:toggle()
     end
   elseif key == self.key_bindings.craft then
     -- Open crafting menu
-    if self.game_state.components.crafting then
+    if self.game_state.components and self.game_state.components.crafting then
       self.game_state.components.crafting:open_menu()
     end
   end
 end
 
 function InputManager:handle_mouse_pressed(x, y, button)
-  -- Forward to UI manager first
-  self.game_state.debug:debug("handle_mouse_pressed")
+  -- Only log when enabled
+  if self.log_mouse_events then
+    Debug.debug(Debug, "handle_mouse_pressed")
+  end
 
   if self.game_state.current_state and self.game_state.current_state.state_name == "menu" then
     self:handle_mouse_pressed_main_menu(x, y, button)
@@ -159,7 +192,9 @@ function InputManager:handle_mouse_pressed(x, y, button)
 end
 
 function InputManager:handle_mouse_pressed_playing(x, y, button)
-  self.game_state.debug:debug("handle_mouse_pressed_playing ")
+  if self.log_mouse_events then
+    Debug.debug(Debug, "handle_mouse_pressed_playing")
+  end
 end
 
 function InputManager:handle_mouse_pressed_main_menu(x, y, button)
@@ -175,15 +210,21 @@ function InputManager:handle_mouse_pressed_main_menu(x, y, button)
 end
 
 function InputManager:handle_mouse_released_playing(x, y, button)
-  self.game_state.debug:debug("handle_mouse_released_playing")
+  if self.log_mouse_events then
+    Debug.debug(Debug, "handle_mouse_released_playing")
+  end
 end
 
 function InputManager:handle_mouse_released_main_menu(x, y, button)
-  self.game_state.debug:debug("handle_mouse_released_main_menu")
+  if self.log_mouse_events then
+    Debug.debug(Debug, "handle_mouse_released_main_menu")
+  end
 end
 
 function InputManager:handle_mouse_moved_playing(x, y, dx, dy)
-  self.game_state.debug:debug("handle_mouse_moved_playing")
+  if self.log_mouse_events then
+    Debug.debug(Debug, "handle_mouse_moved_playing")
+  end
 end
 
 return InputManager

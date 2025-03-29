@@ -31,9 +31,23 @@ end
 ---@param my number Mouse y position
 ---@return boolean Whether the mouse is hovering over this cell
 function GridCellCore.update(cell, mx, my)
+  -- Validate input
+  if not mx or not my then
+    Debug.debug(Debug, "GridCellCore.update: Invalid mouse position")
+    cell.hover = false
+    return false
+  end
+  
   -- Update hover state
-  cell.hover = GridCellCore.contains_point(cell, mx, my)
-  return cell.hover
+  local contains = GridCellCore.contains_point(cell, mx, my)
+  cell.hover = contains
+  
+  -- Log if hover state changed
+  if contains then
+    Debug.debug(Debug, "GridCellCore.update: Mouse hovering over cell " .. cell.id)
+  end
+  
+  return contains
 end
 
 ---Checks if a point is inside this grid cell
@@ -42,11 +56,20 @@ end
 ---@param y number Y coordinate to check
 ---@return boolean Whether the point is inside the cell
 function GridCellCore.contains_point(cell, x, y)
-  if x and y then
-    return x >= cell.x and x <= cell.x + cell.width and
-           y >= cell.y and y <= cell.y + cell.height
+  if not x or not y then
+    Debug.debug(Debug, "GridCellCore.contains_point: Invalid coordinates")
+    return false
   end
-  return false
+  
+  local result = x >= cell.x and x < cell.x + cell.width and
+                 y >= cell.y and y < cell.y + cell.height
+  
+  if result then
+    Debug.debug(Debug, string.format("GridCellCore.contains_point: Point (%d,%d) is inside cell at (%d,%d)", 
+      x, y, cell.x, cell.y))
+  end
+  
+  return result
 end
 
 ---Adds an item to the grid cell
@@ -60,7 +83,8 @@ function GridCellCore.add_item(cell, item)
   end
   
   cell.item = item
-  Debug.debug(Debug, "GridCellCore.add_item: Added item to cell")
+  Debug.debug(Debug, string.format("GridCellCore.add_item: Added item %s to cell at (%d,%d)", 
+    item.name or "unknown", cell.x, cell.y))
   return true
 end
 
@@ -72,7 +96,8 @@ function GridCellCore.remove_item(cell)
   cell.item = nil
   
   if item then
-    Debug.debug(Debug, "GridCellCore.remove_item: Removed item from cell")
+    Debug.debug(Debug, string.format("GridCellCore.remove_item: Removed item %s from cell at (%d,%d)", 
+      item.name or "unknown", cell.x, cell.y))
   else
     Debug.debug(Debug, "GridCellCore.remove_item: No item to remove")
   end

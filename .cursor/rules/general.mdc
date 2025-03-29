@@ -1,6 +1,6 @@
 ---
 description: 
-globs: *.lua
+globs: 
 alwaysApply: false
 ---
 ```markdown
