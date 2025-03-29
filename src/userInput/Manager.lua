@@ -1,5 +1,6 @@
 local Debug = require("src.core.debug.init")
-local MainMenu = require("src.gamestate.main_menu")
+-- Remove direct import of MainMenu to break circular dependency
+-- local MainMenu = require("src.gamestate.main_menu")
 
 local InputManager = {}
 InputManager.__index = InputManager

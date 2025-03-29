@@ -13,7 +13,15 @@ local MainMenu = require("src.gamestate.main_menu")
 ---@field renderer Renderer
 ---@field input_manager InputManager
 ---@field current_state GameState
+---@field switch_state fun(self: GameState, state_name: string): boolean
 local GameState = {}
+
+-- Define available state types
+GameState.STATE_TYPES = {
+  MENU = "menu",
+  PLAY = "play",
+  SETTINGS = "settings"
+}
 
 ---@return GameState
 function GameState:new()
@@ -45,6 +53,38 @@ function GameState:init()
   end
 
   self.debug:debug("GameState initialized")
+end
+
+---Switch to a different game state
+---@param state_name string The name of the state to switch to
+---@return boolean Whether the state switch was successful
+function GameState:switch_state(state_name)
+  self.debug:debug("Switching to state: " .. state_name)
+  
+  -- Reset UI state
+  if self.ui_manager then
+    self.ui_manager = nil
+  end
+  
+  -- Handle different state types
+  if state_name == GameState.STATE_TYPES.MENU then
+    -- We don't require MainMenu here since it would create a circular dependency
+    self.current_state = MainMenu:new()
+    return true
+  elseif state_name == GameState.STATE_TYPES.PLAY then
+    -- Lazy load the PlayState to avoid circular dependencies
+    local PlayState = require("src.gamestate.play_state")
+    self.current_state = PlayState:new()
+    return true
+  elseif state_name == GameState.STATE_TYPES.SETTINGS then
+    -- Lazy load the SettingsState to avoid circular dependencies
+    local SettingsState = require("src.gamestate.settings")
+    self.current_state = SettingsState:new()
+    return true
+  end
+  
+  self.debug:debug("Unknown state: " .. state_name)
+  return false
 end
 
 function GameState:update(dt)

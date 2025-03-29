@@ -16,6 +16,11 @@ function UI:drawUI(state_name, GameState)
         else
             Debug.debug(Debug, "UI:drawUI - No ui_buttons in GameState")
         end
+        
+        -- Check for modular grid
+        if GameState.components and GameState.components.modular_grid then
+            Debug.debug(Debug, "UI:drawUI - Found modular grid in GameState")
+        end
     else
         Debug.debug(Debug, "UI:drawUI - No GameState provided")
     end

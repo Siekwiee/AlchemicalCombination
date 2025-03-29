@@ -8,6 +8,8 @@ local SettingsState = require("src.gamestate.settings")
 local Debug = require("src.core.debug.init")
 -- Use local variables for better performance and scoping
 local state
+-- Make state available globally for menu transitions
+_G.STATE = nil
 local game_states = {}
 local should_close = false
 
@@ -18,6 +20,8 @@ function love.load()
   
   -- Initialize game states
   state = GameState:new()
+  -- Make state available globally
+  _G.STATE = state
   Debug.clear()
   -- Initialize random seed
   math.randomseed(os.time())
@@ -26,6 +30,10 @@ end
 function love.update(dt)
   -- Cap delta time to avoid physics/logic issues on lag spikes
   local capped_dt = math.min(dt, 0.1)
+  
+  -- Update background effects
+  local Background = require("src.renderer.background")
+  Background:update(capped_dt)
   
   -- Update current game state
   if state and state.update then
@@ -53,7 +61,7 @@ end
 function love.keypressed(key, scancode, isrepeat)
   -- Global keyboard shortcuts
   if key == "escape" then
-    if state == MainMenu then
+    if state and state.state_name == "menu" then
       should_close = true
       love.event.quit()
     else

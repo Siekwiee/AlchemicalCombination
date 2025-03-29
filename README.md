@@ -63,7 +63,7 @@ Once you've mastered the basics:
 
 - [x] Core combination mechanics
 - [x] Basic UI implementation
-- [ ] Elementary element interactions
+- [x] Elementary element interactions
 - [ ] Grid system implementation
 
 ### v0.2 - Essential Alchemy (In Progress)

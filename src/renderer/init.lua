@@ -32,6 +32,12 @@ end
 function Renderer:draw(state_name, GameState)
     self.state_name = state_name
     self.game_state = GameState
+    
+    -- Make sure GameState has a valid state_name
+    if GameState and not GameState.state_name then
+        GameState.state_name = state_name
+    end
+    
     Background:drawBackground(GameState)
     --self:drawEntities()  -- Keep entities commented as they may not be needed in menu
     UI:drawUI(state_name, GameState)

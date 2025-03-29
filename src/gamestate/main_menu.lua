@@ -2,7 +2,8 @@ local MainMenu = {}
 -- Import the Button component
 local Button = require("src.userInterface.components.button.init")
 local Debug = require("src.core.debug.init")
-local PlayState = require("src.gamestate.play_state")
+-- Remove PlayState dependency to avoid circular dependency
+-- local PlayState = require("src.gamestate.play_state")
 local Renderer = require("src.renderer.init")
 -- Public interface
 function MainMenu:new()
@@ -21,7 +22,15 @@ function MainMenu:new()
   
   -- Define button data
   self.buttons = {
-    { text = "Start Game", action = function() self.current_state = PlayState:Switchto() end },
+    { text = "Start Game", action = function() 
+        -- Access the parent GameState and switch to play state
+        if _G.STATE and _G.STATE.switch_state then
+          _G.STATE:switch_state("play")
+        else
+          Debug.debug(Debug, "ERROR: Cannot switch state, _G.STATE not available")
+        end
+      end 
+    },
     { text = "Options", action = function() print("Options clicked") end },
     { text = "Exit", action = function() love.event.quit() end }
   }
