@@ -1,3 +1,7 @@
+local love = require("love")
+
+---@class ButtonViz
+---@field draw fun(button: Button)
 -- Button Visualization
 local ButtonViz = {}
 

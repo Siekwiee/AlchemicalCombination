@@ -22,7 +22,6 @@ function Button:new(config)
     setmetatable(o, {__index = self})
     -- Required properties
     if config.buttons then
----@diagnostic disable-next-line: deprecated
         local a = unpack(config.buttons)
         o.buttons = config.buttons or {}
         Debug.debug(Debug, "Button:new " .. table.concat(a, ", "))
@@ -31,7 +30,7 @@ function Button:new(config)
     o.y = config.y or 0
     o.width = config.width or 100
     o.height = config.height or 40
-    self.check_click = ButtonCore.check_click
+    o.check_click = ButtonCore.check_click
     -- Optional properties
     o.text = config.text or ""
     o.on_click = config.on_click
@@ -59,11 +58,7 @@ function Button:check_click(x, y, button)
     if self.disabled then
         return false
     end
-    if self:check_click(x, y, button) then
-        self.on_click()
-        return true
-    end
-    return false
+    return ButtonCore.check_click(self, x, y, button)
 end
 
 return Button

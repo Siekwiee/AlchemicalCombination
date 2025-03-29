@@ -21,7 +21,7 @@ function MainMenu:new()
   
   -- Define button data
   self.buttons = {
-    { text = "Start Game", action = function() self.current_state = PlayState:Switchto(self) end },
+    { text = "Start Game", action = function() self.current_state = PlayState:Switchto() end },
     { text = "Options", action = function() print("Options clicked") end },
     { text = "Exit", action = function() love.event.quit() end }
   }
@@ -56,9 +56,9 @@ function MainMenu:update(dt)
 end
 
 function MainMenu:draw()
-  -- init Renderer
-  self.renderer = Renderer:new(MainMenu)
-  self.renderer:draw()
+  -- init Renderer with self (the instance) instead of MainMenu (the module)
+  self.renderer = Renderer:new(self)
+  self.renderer:draw(self.state_name, self)
 end
 
 function MainMenu:mousepressed(x, y, button)

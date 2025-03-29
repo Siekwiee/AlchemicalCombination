@@ -1,3 +1,5 @@
+local Debug = require("src.core.debug.init")
+
 local UIManager = {}
 UIManager.__index = UIManager
 
@@ -11,9 +13,10 @@ UIManager.__index = UIManager
 function UIManager:new(game_state)
   local self = setmetatable({}, self)
   self.game_state = game_state
+  self.state_name = game_state.state_name
   self.elements = {}
-  
-  -- Initialize UI elements
+  -- Initialize UI elemselfents
+  Debug.debug(Debug, "UIManager:new - Creating new instance")
   self:init_elements()
   
   return self
@@ -22,17 +25,18 @@ end
 function UIManager:init_elements()
   -- Load UI elements
   local Button = require("src.userInterface.components.button.init")
-  
-  self.elements.craft_button = Button:new({
-    x = 50,
-    y = 350,
-    width = 120,
-    height = 40,
-    text = "Craft",
-    on_click = function() 
-      self.game_state.components.crafting:attempt_craft()
+  Debug.debug(Debug, "UIManager:init_elements - Before setting menu_buttons")
+  if self.game_state then
+    Debug.debug(Debug, "UIManager:init_elements - game_state exists")
+    if self.game_state.ui_buttons then
+      Debug.debug(Debug, "UIManager:init_elements - Found " .. #self.game_state.ui_buttons .. " buttons")
+    else
+      Debug.debug(Debug, "UIManager:init_elements - No ui_buttons in game_state")
     end
-  })
+  else
+    Debug.debug(Debug, "UIManager:init_elements - No game_state")
+  end
+  self.elements.menu_buttons = self.game_state.ui_buttons
 end
 
 function UIManager:update(dt)
@@ -46,10 +50,19 @@ end
 
 function UIManager:draw()
   -- Draw all UI elements
-  for _, element in pairs(self.elements) do
-    if element.draw then
-      element:draw()
+  Debug.debug(Debug, "UIManager:draw - Starting draw")
+  if self.elements and self.elements.menu_buttons then
+    Debug.debug(Debug, "UIManager:draw - Found menu_buttons, count: " .. #self.elements.menu_buttons)
+    for _, button in ipairs(self.elements.menu_buttons) do
+      if button.draw then
+        Debug.debug(Debug, "UIManager:draw - Drawing button: " .. (button.text or "unnamed"))
+        button:draw()
+      else
+        Debug.debug(Debug, "UIManager:draw - Button has no draw method")
+      end
     end
+  else
+    Debug.debug(Debug, "UIManager:draw - No menu_buttons to draw")
   end
 end
 

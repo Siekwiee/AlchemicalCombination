@@ -31,81 +31,70 @@ local LOG_LEVELS = {
 ---@field clear fun(self: Debug)
 ---@return Debug
 function Debug:new()
-    local o = {}
+    local o = {
+        log = {},
+        is_enabled = true,
+        log_level = LOG_LEVELS.DEBUG,
+        flag_file_logging = true,
+        log_directory = nil
+    }
     setmetatable(o, self)
     self.__index = self
     return o
 end
 
--- Internal state
-local log = {}
-local is_enabled = true
-local log_level = LOG_LEVELS.DEBUG
-local flag_file_logging = true
-
--- Helper function to check if a directory exists
-local function directory_exists(path)
-  local file = io.open(path .. "/.dirtest", "w")
-  if file then
-    file:close()
-    os.remove(path .. "/.dirtest")
-    return true
-  else
-    return false
-  end
-end
-
--- Helper function to create a directory
-local function create_directory(path)
-  -- Use OS-specific commands to create directory
-  local success
-  if package.config:sub(1,1) == '\\' then  -- Windows
-    -- Use Windows command
-    success = os.execute('mkdir "' .. path:gsub('/', '\\') .. '" > NUL 2>&1')
-  else  -- Unix-like
-    -- Use Unix command with -p to create parent directories
-    success = os.execute('mkdir -p "' .. path .. '" > /dev/null 2>&1')
-  end
-  return success
-end
-
--- Ensure log directory exists
-function Debug:ensure_log_directory_exists()
-  if not self.log_directory then
-    self:add_default_log_dir()
-  end
-  
-  -- Check if directory exists, create if it doesn't
-  if not directory_exists(self.log_directory) then
-    create_directory(self.log_directory)
-  end
-end
-
----@param path? string
-function Debug:add_default_log_dir(path)
-  local default_save_directory
-  if not path then
-    -- Get OS-appropriate save directory
-    if package.config:sub(1,1) == '\\' then  -- Windows
-      default_save_directory = os.getenv("APPDATA") or "."
-    else  -- Unix-like
-      default_save_directory = os.getenv("HOME") and (os.getenv("HOME") .. "/.config") or "."
+-- Helper function to check if a directory exists and is writable
+local function directory_exists_and_writable(path)
+    local test_file = path .. "/.test_write"
+    local file = io.open(test_file, "w")
+    if file then
+        file:close()
+        os.remove(test_file)
+        return true
     end
-    default_save_directory = default_save_directory .. "/alchemical_combinations"
-  else
-    default_save_directory = path
-  end
-  
-  local default_log_directory = default_save_directory .. "/log/debug"
-  
-  -- Create the directory path
-  create_directory(default_log_directory)
-  
-  if default_log_directory ~= nil then
-    self.log_directory = default_log_directory
-  else 
-    self.log_directory = "unwantedDirectory/log/debug"
-  end
+    return false
+end
+
+-- Helper function to create a directory with proper permissions
+local function create_directory(path)
+    -- Use Unix command with -p to create parent directories and set permissions
+    local success = os.execute('mkdir -p "' .. path .. '" && chmod 755 "' .. path .. '"')
+    if success then
+        -- Verify we can write to it
+        return directory_exists_and_writable(path)
+    end
+    return false
+end
+
+-- Ensure log directory exists and is writable
+function Debug:ensure_log_directory_exists()
+    if not self.log_directory then
+        self:add_default_log_dir()
+    end
+    
+    -- Check if directory exists and is writable, create if it doesn't
+    if not directory_exists_and_writable(self.log_directory) then
+        if not create_directory(self.log_directory) then
+            print("Warning: Could not create or write to log directory: " .. self.log_directory)
+            self.flag_file_logging = false
+            return false
+        end
+    end
+    return true
+end
+
+function Debug:add_default_log_dir(path)
+    -- Get OS-appropriate save directory
+    local default_save_directory
+    if not path then
+        default_save_directory = os.getenv("HOME") and (os.getenv("HOME") .. "/.local/share") or "."
+        default_save_directory = default_save_directory .. "/alchemical_combinations"
+    else
+        default_save_directory = path
+    end
+    
+    self.log_directory = default_save_directory .. "/log/debug"
+    return self:ensure_log_directory_exists()
 end
 
 -- Format message with timestamp and level
@@ -115,31 +104,27 @@ function Debug:add_timestamp_to_message(level, message)
   return message_with_timestamp
 end
 
--- Write log to file
----@param formatted_message string
+-- Write log to file with better error handling
 function Debug:write_to_file(formatted_message)
-  if not self.log_directory then
-    self:add_default_log_dir()
-  end
-  
-  local file_path = self.log_directory .. "/debug.log"
-  
-  -- Try to append to file first
-  local file, err = io.open(file_path, "a")
-  if file then
-    file:write(formatted_message .. "\n")
-    file:close()
-  else
-    -- If append fails (likely because file doesn't exist yet), try to write instead
-    file, err = io.open(file_path, "w")
-    if file then
-      file:write(formatted_message .. "\n")
-      file:close()
-    else
-      -- Don't error out, just add a warning log in memory
-      self:add_log("WARNING", "Failed to write to log file: " .. tostring(err))
+    if not self.flag_file_logging then return end
+    
+    if not self.log_directory or not self:ensure_log_directory_exists() then
+        return
     end
-  end
+    
+    local file_path = self.log_directory .. "/debug.log"
+    local success, err = pcall(function()
+        local file = io.open(file_path, "a")
+        if file then
+            file:write(formatted_message .. "\n")
+            file:close()
+        end
+    end)
+    
+    if not success then
+        print("Warning: Failed to write to log file: " .. tostring(err))
+        self.flag_file_logging = false
+    end
 end
 
 -- Add a log entry to the log history
@@ -163,17 +148,13 @@ function Debug:add_log(level_name, message)
   end
 end
 
--- Public API
----@param flag_file_logging boolean
----@param default_log_level string
----@return Debug
-function Debug.init(self, flag_file_logging, default_log_level)
-  local debug = Debug:new()
-  self.log = {} -- Initialize log array
-  self:add_default_log_dir()
-  self.flag_file_logging = flag_file_logging or false
-  self.log_level = LOG_LEVELS[default_log_level or "INFO"] or LOG_LEVELS.INFO
-  return debug
+-- Initialize debug system
+function Debug:init(flag_file_logging, default_log_level)
+    local debug = Debug:new()
+    debug.flag_file_logging = flag_file_logging or false
+    debug.log_level = LOG_LEVELS[default_log_level or "INFO"] or LOG_LEVELS.INFO
+    debug:add_default_log_dir()
+    return debug
 end
 
 ---@param message string

@@ -7,28 +7,34 @@ local Entities = require("src.renderer.entities")
 local UI = require("src.renderer.ui")
 
 ---@class Renderer
----@field new fun(game_state: GameState): Renderer
----@field draw fun(self: Renderer)
----@field drawBackground fun(self: Renderer)
----@field drawEntities fun(self: Renderer)
----@field drawUI fun(self: Renderer)
+---@field new fun(): Renderer
+---@field draw fun(self: Renderer, state_name: string, GameState: GameState)
+---@field drawBackground fun(game_state: GameState)
+---@field drawEntities fun(game_state: GameState)
+---@field drawUI fun(game_state: GameState)
 ---@field layers table<string, number>
-function Renderer:new(game_state)
+---@field game_state GameState
+function Renderer:new()
     local self = setmetatable({}, self)
-    self.game_state = game_state
-    self.layers = {
-      "background",
-      "entities",
-      "ui"
-    }
-    
+
+    self:init()
     return self
 end
 
-function Renderer:draw()
-    self.drawBackground = Background:drawBackground(self)
-    --self:drawEntities()
-    --self:drawUI()
+function Renderer:init()
+    self.layers = {
+        "background",
+        "entities",
+        "ui"
+    }
+end
+
+function Renderer:draw(state_name, GameState)
+    self.state_name = state_name
+    self.game_state = GameState
+    Background:drawBackground(GameState)
+    --self:drawEntities()  -- Keep entities commented as they may not be needed in menu
+    UI:drawUI(state_name, GameState)
 end
 
 return Renderer

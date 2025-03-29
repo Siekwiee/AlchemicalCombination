@@ -6,18 +6,31 @@ local PlayState = {}
 
 ---@class PlayState
 ---@field new fun(): PlayState
----@field Switchto fun(gameState: GameState): void
+---@field Switchto fun(): void
+---@field init fun(): void
+---@field draw fun(): void
+---@field renderer Renderer
+---@field state_name string
 function PlayState:new()
     local instance = {}
-    setmetatable(instance, {__index = self})
+    setmetatable(instance, { __index = PlayState })
+    self.state_name = "playstate"
 
-    instance.renderer = Renderer:new(instance)
-    return instance
+    self:init()
+    return self
 end
 
-function PlayState:Switchto(gameState)
+function PlayState:init()
+    self.renderer = Renderer:new()
+end
+
+function PlayState:draw()
+    self.renderer:draw(self)
+end
+
+function PlayState:Switchto()
     love.graphics.clear()
     Debug.debug(Debug, "Playing")
-    gameState.current_state = PlayState:new()
+    PlayState:new()
 end
 return PlayState
