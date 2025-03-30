@@ -1,13 +1,13 @@
-local ElementData = {}
+local ItemData = {}
 
--- Define all elements
-ElementData.elements = {
+-- Define all items
+ItemData.items = {
   water = {
     id = "water",
     name = "Water",
     type = "basic",
     level = 1,
-    description = "A basic element representing water",
+    description = "A basic item representing water",
     color = {0.2, 0.4, 0.8, 1.0}
   },
   fire = {
@@ -15,7 +15,7 @@ ElementData.elements = {
     name = "Fire",
     type = "basic",
     level = 1,
-    description = "A basic element representing fire",
+    description = "A basic item representing fire",
     color = {0.9, 0.3, 0.1, 1.0}
   },
   earth = {
@@ -23,7 +23,7 @@ ElementData.elements = {
     name = "Earth",
     type = "basic",
     level = 1,
-    description = "A basic element representing earth",
+    description = "A basic item representing earth",
     color = {0.5, 0.3, 0.0, 1.0}
   },
   air = {
@@ -31,15 +31,15 @@ ElementData.elements = {
     name = "Air",
     type = "basic",
     level = 1,
-    description = "A basic element representing air",
+    description = "A basic item representing air",
     color = {0.8, 0.8, 0.9, 1.0}
   },
-  -- Add any other elements from the JSON file
-  -- You can easily add more elements here
+  -- Add any other items from the JSON file
+  -- You can easily add more items here
 }
 
 -- Define all combinations with pre-sorted keys
-ElementData.combinations = {
+ItemData.combinations = {
   ["air+earth"] = {
     id = "dust",
     name = "Dust",
@@ -92,29 +92,29 @@ ElementData.combinations = {
   -- You can easily add more combinations here
 }
 
--- Function to add a new element
-function ElementData.add_element(element)
-  if not element or not element.id then
+-- Function to add a new item
+function ItemData.add_item(item)
+  if not item or not item.id then
     return false
   end
   
-  ElementData.elements[element.id] = element
+  ItemData.items[item.id] = item
   return true
 end
 
 -- Function to add a new combination
-function ElementData.add_combination(element1_id, element2_id, result)
-  if not element1_id or not element2_id or not result or not result.id then
+function ItemData.add_combination(item1_id, item2_id, result)
+  if not item1_id or not item2_id or not result or not result.id then
     return false
   end
   
   -- Create sorted key
-  local inputs = {element1_id, element2_id}
+  local inputs = {item1_id, item2_id}
   table.sort(inputs)
   local key = table.concat(inputs, "+")
   
-  ElementData.combinations[key] = result
+  ItemData.combinations[key] = result
   return true
 end
 
-return ElementData 
+return ItemData 

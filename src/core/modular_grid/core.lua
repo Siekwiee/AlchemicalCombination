@@ -185,199 +185,28 @@ function ModularGridCore.combine_items(grid, source_cell, target_cell)
   return false
 end
 
----Handles mouse press on the grid
+---Handles mouse press on the grid - now delegates to InputManager
 ---@param grid table The grid to handle input for
 ---@param x number Mouse x position
 ---@param y number Mouse y position
 ---@param button number The mouse button that was pressed
+---@param input_manager table Optional InputManager instance
 ---@return boolean Whether the input was handled
-function ModularGridCore.handle_mouse_pressed(grid, x, y, button)
-  -- Only handle left clicks
-  if button ~= 1 then
-    return false
+function ModularGridCore.handle_mouse_pressed(grid, x, y, button, input_manager)
+  -- If we have an input manager, use it
+  if input_manager and input_manager.handle_grid_click then
+    return input_manager:handle_grid_click(grid, x, y, button)
   end
   
-  -- DIRECT CONSOLE OUTPUT
-  print("----- CLICK EVENT -----")
-  print("Mouse clicked at (" .. x .. "," .. y .. ") with button " .. button)
-  print("Grid position: (" .. grid.x .. "," .. grid.y .. "), dimensions: " .. grid.width .. "x" .. grid.height)
-  
-  -- Debug the item_manager
-  if not grid.item_manager then
-    print("ERROR: Grid has NO ITEM MANAGER!")
-    -- Create one immediately
-    print("Creating emergency item manager")
-    local ItemManager = require("src.core.items.manager")
-    grid.item_manager = ItemManager:new()
-  else
-    print("Grid has item manager: " .. tostring(grid.item_manager))
-    if grid.item_manager.combine then
-      print("Item manager has combine method")
-    else
-      print("ERROR: Item manager has NO combine method!")
-    end
+  -- For backwards compatibility, if no input manager is provided
+  -- Try to find it in the global state
+  if _G.STATE and _G.STATE.input_manager and _G.STATE.input_manager.handle_grid_click then
+    return _G.STATE.input_manager:handle_grid_click(grid, x, y, button)
   end
   
-  print("Current selected cell: " .. (grid.selected_cell and grid.selected_cell.id or "none"))
-  
-  -- Check if click is within grid bounds
-  if x < grid.x or x > grid.x + grid.width or y < grid.y or y > grid.y + grid.height then
-    print("Click OUTSIDE grid bounds")
-    if grid.selected_cell then
-      print("Clearing selection (was " .. grid.selected_cell.id .. ")")
-      grid.selected_cell.active = false
-      grid.selected_cell = nil
-    end
-    return false
-  else
-    print("Click INSIDE grid bounds")
-  end
-  
-  -- Find which cell was clicked
-  local clicked_cell = nil
-  for id, cell in pairs(grid.cells) do
-    print("Testing cell " .. id .. " at (" .. cell.x .. "," .. cell.y .. ") size " .. cell.width .. "x" .. cell.height)
-    if x >= cell.x and x < cell.x + cell.width and
-       y >= cell.y and y < cell.y + cell.height then
-      clicked_cell = cell
-      print("FOUND clicked cell: " .. id)
-      break
-    end
-  end
-  
-  -- If no cell was found (shouldn't happen but just in case)
-  if not clicked_cell then
-    print("ERROR: No cell found at click position despite being in grid bounds!")
-    return false
-  end
-  
-  -- If clicked cell has no item
-  if not clicked_cell.item then
-    print("Clicked cell " .. clicked_cell.id .. " has NO ITEM")
-    if grid.selected_cell then
-      print("Clearing selection (was " .. grid.selected_cell.id .. ")")
-      grid.selected_cell.active = false
-      grid.selected_cell = nil
-    end
-    return true
-  else
-    print("Clicked cell " .. clicked_cell.id .. " has item: " .. (clicked_cell.item.name or "unnamed"))
-  end
-  
-  -- If no cell is currently selected, select this one
-  if not grid.selected_cell then
-    print("SELECTING cell " .. clicked_cell.id)
-    grid.selected_cell = clicked_cell
-    clicked_cell.active = true
-    return true
-  end
-  
-  -- If this is the same cell as already selected, deselect it
-  if grid.selected_cell and grid.selected_cell.id == clicked_cell.id then
-    print("DESELECTING cell " .. clicked_cell.id .. " (already selected)")
-    grid.selected_cell.active = false
-    grid.selected_cell = nil
-    return true
-  end
-  
-  -- At this point we have a valid source cell (grid.selected_cell) and target cell (clicked_cell)
-  if grid.selected_cell then
-    print("READY TO COMBINE: " .. grid.selected_cell.id .. " + " .. clicked_cell.id)
-    
-    -- Attempt to combine items
-    print("COMBINING cells: " .. grid.selected_cell.id .. " + " .. clicked_cell.id)
-    print("Items: " .. (grid.selected_cell.item and grid.selected_cell.item.name or "nil") .. " + " 
-         .. (clicked_cell.item and clicked_cell.item.name or "nil"))
-  end
-  
-  -- Try to combine items
-  if not grid.item_manager then
-    print("ERROR: No item manager found!")
-    return false
-  end
-  
-  -- Ensure both cells have valid items
-  if not grid.selected_cell.item then
-    print("ERROR: Source cell has no item!")
-    grid.selected_cell.active = false
-    grid.selected_cell = nil
-    return true
-  end
-  
-  if not clicked_cell.item then
-    print("ERROR: Target cell has no item!")
-    grid.selected_cell.active = false
-    grid.selected_cell = nil
-    return true
-  end
-  
-  -- Manually check for and implement hardcoded basic combinations for debugging
-  local combination_result = nil
-  
-  -- Try pcall with the item_manager
-  local success, result = pcall(function()
-    return grid.item_manager:combine(grid.selected_cell.item, clicked_cell.item)
-  end)
-  
-  if not success then
-    print("ERROR in combine call: " .. tostring(result))
-    
-    -- Emergency fallback for basic elements
-    local source_id = grid.selected_cell.item.id
-    local target_id = clicked_cell.item.id
-    
-    print("Trying emergency fallback combination for " .. source_id .. " + " .. target_id)
-    
-    -- Hard-coded fallback combinations
-    local ids = {source_id, target_id}
-    table.sort(ids)
-    local combo_key = ids[1] .. "+" .. ids[2]
-    
-    local hardcoded_combinations = {
-      ["air+fire"] = {id = "energy", name = "Energy", color = {1.0, 0.8, 0.0, 1.0}},
-      ["earth+water"] = {id = "mud", name = "Mud", color = {0.4, 0.3, 0.2, 1.0}},
-      ["fire+water"] = {id = "steam", name = "Steam", color = {0.8, 0.8, 0.8, 0.7}},
-      ["earth+fire"] = {id = "lava", name = "Lava", color = {0.9, 0.4, 0.0, 1.0}}
-    }
-    
-    combination_result = hardcoded_combinations[combo_key]
-    if combination_result then
-      print("EMERGENCY: Found hardcoded combination: " .. combination_result.name)
-    else
-      print("No hardcoded combination found")
-    end
-  else
-    combination_result = result
-    if combination_result then
-      print("COMBINATION SUCCESSFUL! Created: " .. (combination_result.name or "unnamed"))
-    else
-      print("Combination FAILED - no recipe found")
-    end
-  end
-  
-  if combination_result then
-    -- We have a successful combination!
-    
-    -- Remove source item
-    print("Removing item from source cell " .. grid.selected_cell.id)
-    grid.selected_cell.item = nil
-    
-    -- Replace target item with result
-    print("Setting result in target cell " .. clicked_cell.id)
-    clicked_cell.item = combination_result
-    
-    print("COMBINATION COMPLETE!")
-  else
-    print("Combination did not produce a result")
-  end
-  
-  -- Clear selection regardless of outcome
-  print("Clearing selection")
-  grid.selected_cell.active = false
-  grid.selected_cell = nil
-  
-  print("----- END CLICK EVENT -----")
-  return true
+  -- Fallback in case we can't find an input manager
+  Debug.debug(Debug, "WARNING: No InputManager available, grid interaction disabled")
+  return false
 end
 
 ---Handles mouse release on the grid

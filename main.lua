@@ -22,7 +22,7 @@ function love.load()
   state = GameState:new()
   -- Make state available globally
   _G.STATE = state
-  Debug.clear()
+  Debug.clear_logs()
   -- Initialize random seed
   math.randomseed(os.time())
 end

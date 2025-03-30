@@ -31,7 +31,7 @@ function MainMenu:new()
         end
       end 
     },
-    { text = "Options", action = function() print("Options clicked") end },
+    { text = "Options", action = function() Debug.debug(Debug, "Options clicked") end },
     { text = "Exit", action = function() love.event.quit() end }
   }
   

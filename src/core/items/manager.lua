@@ -176,11 +176,11 @@ end
 ---@return table|nil Result item or nil if no valid combination
 function ItemManager:combine(item1, item2)
   if not item1 or not item2 then
-    print("ItemManager:combine - Invalid items (nil values)")
+    Debug.debug(Debug, "ItemManager:combine - Invalid items (nil values)")
     return nil
   end
   
-  print("ItemManager:combine - Attempting to combine: " .. 
+  Debug.debug(Debug, "ItemManager:combine - Attempting to combine: " .. 
         (item1.name or "unnamed") .. " + " .. (item2.name or "unnamed"))
   
   -- Handle same-type combination (level up)
@@ -188,7 +188,7 @@ function ItemManager:combine(item1, item2)
     local result = self:create_item(item1.id)
     if result and result.level then
       result.level = (item1.level or 1) + 1
-      print("ItemManager:combine - Upgraded " .. result.name .. " to level " .. result.level)
+      Debug.debug(Debug, "ItemManager:combine - Upgraded " .. result.name .. " to level " .. result.level)
       return result
     end
   end
@@ -198,30 +198,30 @@ function ItemManager:combine(item1, item2)
   table.sort(inputs)
   local key = table.concat(inputs, "+")
   
-  print("ItemManager:combine - Looking up combination key: " .. key)
+  Debug.debug(Debug, "ItemManager:combine - Looking up combination key: " .. key)
   
   -- Look up combination result
   local result_data = self.combinations[key]
   if result_data then
-    print("ItemManager:combine - Created " .. result_data.name .. " from " .. 
+    Debug.debug(Debug, "ItemManager:combine - Created " .. result_data.name .. " from " .. 
           item1.name .. " and " .. item2.name)
     
     -- Make sure we return a proper item by running it through create_item
     if result_data.id then
       local item = self:create_item(result_data.id)
       if item then 
-        print("ItemManager:combine - Successfully created: " .. item.name)
+        Debug.debug(Debug, "ItemManager:combine - Successfully created: " .. item.name)
         return item 
       end
     end
     
     -- If create_item failed or no id, just return the raw result data
-    print("ItemManager:combine - Returning raw result data")
+    Debug.debug(Debug, "ItemManager:combine - Returning raw result data")
     return result_data
   end
   
-  print("ItemManager:combine - No combination found for " .. item1.name .. " + " .. item2.name)
+  Debug.debug(Debug, "ItemManager:combine - No combination found for " .. item1.name .. " + " .. item2.name)
   return nil
 end
 
-return ItemManager 
+return ItemManager

@@ -54,7 +54,8 @@ function PlayState:init()
         cell_width = 64,
         cell_height = 64,
         spacing = 8,
-        title = nil
+        title = nil,
+        input_manager = self.input_manager  -- Pass the input manager to the grid
     })
     
     -- Add some sample items for testing
@@ -113,34 +114,34 @@ function PlayState:keypressed(key, scancode, isrepeat)
 end
 
 function PlayState:mousepressed(x, y, button)
-    print("PlayState:mousepressed - Button " .. button .. " at " .. x .. "," .. y)
+    Debug.debug(Debug, "PlayState:mousepressed - Button " .. button .. " at " .. x .. "," .. y)
     
     -- Check if we have a modular grid
     if not self.components.modular_grid then
-        print("PlayState:mousepressed - No modular grid")
+        Debug.debug(Debug, "PlayState:mousepressed - No modular grid")
         return false
     end
     
     -- Forward to modular grid without additional checks
-    print("PlayState:mousepressed - Forwarding directly to grid")
+    Debug.debug(Debug, "PlayState:mousepressed - Forwarding directly to grid")
     local result = self.components.modular_grid:handle_mouse_pressed(x, y, button)
-    print("PlayState:mousepressed - Grid returned: " .. tostring(result))
+    Debug.debug(Debug, "PlayState:mousepressed - Grid returned: " .. tostring(result))
     return result
 end
 
 function PlayState:mousereleased(x, y, button)
-    print("PlayState:mousereleased - Button " .. button .. " at " .. x .. "," .. y)
+    Debug.debug(Debug, "PlayState:mousereleased - Button " .. button .. " at " .. x .. "," .. y)
     
     -- Check if we have a modular grid
     if not self.components.modular_grid then
-        print("PlayState:mousereleased - No modular grid")
+        Debug.debug(Debug, "PlayState:mousereleased - No modular grid")
         return false
     end
     
     -- Forward to modular grid without additional checks
-    print("PlayState:mousereleased - Forwarding directly to grid")
+    Debug.debug(Debug, "PlayState:mousereleased - Forwarding directly to grid")
     local result = self.components.modular_grid:handle_mouse_released(x, y, button)
-    print("PlayState:mousereleased - Grid returned: " .. tostring(result))
+    Debug.debug(Debug, "PlayState:mousereleased - Grid returned: " .. tostring(result))
     return result
 end
 

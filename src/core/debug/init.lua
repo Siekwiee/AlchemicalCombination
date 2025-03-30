@@ -1,5 +1,9 @@
+-- Import dependencies
 local love = require("love")
+local Logger = require("src.core.debug.logger")
+local Display = require("src.core.debug.display")
 
+-- Debug module
 local Debug = {}
 
 -- Constants
@@ -18,13 +22,10 @@ local last_message = {
   timestamp = 0
 }
 
--- Global instance for safety
-local global_instance = nil
-
--- Debug state
-Debug.is_enabled = true
-Debug.messages = {}
-Debug.max_messages = 20
+-- Debug state (forwarded from Display module)
+Debug.is_enabled = Display.is_enabled
+Debug.messages = Display.messages
+Debug.max_messages = Display.max_messages
 
 ---@class Debug
 ---@field log table<string, string>
@@ -32,13 +33,7 @@ Debug.max_messages = 20
 ---@field log_level number
 ---@field flag_file_logging boolean
 ---@field filtered_messages table<string, boolean>
----@field ensure_log_directory_exists fun(path: string)
----@field format_message_with_timestamp fun(level: string, message: string)
----@field write_to_file fun(formatted_message: string)
----@field add_log fun(level_name: string, message: string, level_value: number)
----@field init fun(default_log_level: number, flag_file_logging: boolean)
 ---@field log_directory string
----@field add_default_log_dir fun()
 ---@field warning fun(self: Debug, message: string)
 ---@field info fun(self: Debug, message: string)
 ---@field error fun(self: Debug, message: string)
@@ -63,88 +58,13 @@ function Debug:new()
     return o
 end
 
--- Helper function to check if a directory exists and is writable
-local function directory_exists_and_writable(path)
-    local test_file = path .. "/.test_write"
-    local file = io.open(test_file, "w")
-    if file then
-        file:close()
-        os.remove(test_file)
-        return true
-    end
-    return false
-end
-
--- Helper function to create a directory with proper permissions
-local function create_directory(path)
-    -- Use Unix command with -p to create parent directories and set permissions
-    local success = os.execute('mkdir -p "' .. path .. '" && chmod 755 "' .. path .. '"')
-    if success then
-        -- Verify we can write to it
-        return directory_exists_and_writable(path)
-    end
-    return false
-end
-
--- Ensure log directory exists and is writable
-function Debug:ensure_log_directory_exists()
+-- Initialize the log directory
+function Debug:init_log_directory()
     if not self.log_directory then
-        self:add_default_log_dir()
-    end
-    
-    -- Check if directory exists and is writable, create if it doesn't
-    if not directory_exists_and_writable(self.log_directory) then
-        if not create_directory(self.log_directory) then
-            print("Warning: Could not create or write to log directory: " .. self.log_directory)
-            self.flag_file_logging = false
-            return false
-        end
+        self.log_directory = Logger.get_default_log_dir()
+        return Logger.ensure_directory_exists(self.log_directory)
     end
     return true
-end
-
-function Debug:add_default_log_dir(path)
-    -- Get OS-appropriate save directory
-    local default_save_directory
-    if not path then
-        default_save_directory = os.getenv("HOME") and (os.getenv("HOME") .. "/.local/share") or "."
-        default_save_directory = default_save_directory .. "/alchemical_combinations"
-    else
-        default_save_directory = path
-    end
-    
-    self.log_directory = default_save_directory .. "/log/debug"
-    return self:ensure_log_directory_exists()
-end
-
--- Format message with timestamp and level
-function Debug:add_timestamp_to_message(level, message)
-  local timestamp = os.date("%Y-%m-%d %H:%M:%S")
-  local message_with_timestamp = string.format("[%s][%s] %s", timestamp, level, message)
-  return message_with_timestamp
-end
-
--- Write log to file with better error handling
-function Debug:write_to_file(formatted_message)
-    if not self.flag_file_logging then return end
-    
-    if not self.log_directory or not self:ensure_log_directory_exists() then
-        return
-    end
-    
-    local file_path = self.log_directory .. "/debug.log"
-    local success, err = pcall(function()
-        local file = io.open(file_path, "a")
-        if file then
-            file:write(formatted_message .. "\n")
-            file:close()
-        end
-    end)
-    
-    if not success then
-        print("Warning: Failed to write to log file: " .. tostring(err))
-        self.flag_file_logging = false
-    end
 end
 
 -- Add a log entry to the log history with duplicate prevention
@@ -184,7 +104,8 @@ function Debug:add_log(level_name, message)
   -- Update timestamp
   last_message.timestamp = current_time
   
-  local formatted_message = self:add_timestamp_to_message(level_name, message)
+  -- Format message with timestamp
+  local formatted_message = Logger.format_with_timestamp(level_name, message)
   
   -- Initialize log array if not already done
   if not self.log then
@@ -199,274 +120,120 @@ function Debug:add_log(level_name, message)
     table.remove(self.log, 1)
   end
   
+  -- Add to on-screen display
+  Display.add_message(message, level_name)
+  
   -- Write to file if enabled
   if self.flag_file_logging then
-    -- Use pcall to prevent errors from file operations from crashing the game
-    pcall(function()
-      self:write_to_file(formatted_message)
-    end)
-  end
-end
-
--- Initialize debug system
-function Debug:init(flag_file_logging, default_log_level)
-    -- Use existing global instance if available
-    if global_instance then
-        return global_instance
+    self:init_log_directory()
+    local success, err = Logger.write_to_file(self.log_directory, formatted_message)
+    if not success then
+      print("Warning: Failed to write to log file: " .. tostring(err))
+      self.flag_file_logging = false
     end
-    
-    local debug = Debug:new()
-    debug.flag_file_logging = flag_file_logging or false
-    debug.log_level = LOG_LEVELS[default_log_level or "INFO"] or LOG_LEVELS.INFO
-    debug:add_default_log_dir()
-    
-    -- Make sure filtered_messages is initialized
-    if not debug.filtered_messages then
-        debug.filtered_messages = {}
-    end
-    
-    -- Add common messages to filter out to reduce spam
-    debug:add_filtered_message("handle_mouse_pressed")
-    debug:add_filtered_message("handle_mouse_released")
-    debug:add_filtered_message("handle_mouse_moved_playing")
-    
-    -- Save global reference to prevent multiple instances
-    global_instance = debug
-    
-    return debug
-end
-
--- Add a message to filter out (won't be logged)
-function Debug:add_filtered_message(message)
-  if not self.filtered_messages then
-    self.filtered_messages = {}
   end
-  self.filtered_messages[message] = true
-end
-
--- Remove a message from the filter list
-function Debug:remove_filtered_message(message)
-  if not self.filtered_messages then
-    self.filtered_messages = {}
-    return
+  
+  -- Direct console output for debug level
+  if level_name == "DEBUG" then
+    print("[DEBUG] " .. message)
   end
-  self.filtered_messages[message] = nil
 end
 
----@param message string
-function Debug.info(self, message)
-  self:add_log("INFO", message)
-end
-
----@param message string
-function Debug.warning(self, message)
+-- Add a warning message to the log
+function Debug:warning(message)
   self:add_log("WARNING", message)
 end
 
----@param message string
-function Debug.error(self, message)
+-- Add an info message to the log
+function Debug:info(message)
+  self:add_log("INFO", message)
+end
+
+-- Add an error message to the log
+function Debug:error(message)
   self:add_log("ERROR", message)
 end
 
----@param message string
-function Debug.debug(self, message)
-  if not Debug.is_enabled then
-    return
-  end
-  
-  -- Print to console first for immediate feedback
-  print("[DEBUG] " .. message)
-  
-  -- Add message to history
-  table.insert(Debug.messages, 1, message)
-  
-  -- Trim message history
-  while #Debug.messages > Debug.max_messages do
-    table.remove(Debug.messages)
+-- Add a debug message to the log
+function Debug:debug(debugger, message)
+  -- Allow usage like: Debug.debug(Debug, "message") for global instance
+  -- or self:debug("message") for instance method
+  if type(debugger) == "table" and type(message) == "nil" then
+    -- Called as instance method, only one argument
+    message = debugger
+    self:add_log("DEBUG", message)
+  elseif type(debugger) == "table" and type(message) == "string" then
+    -- Called as static method with Debug as first parameter
+    debugger:add_log("DEBUG", message)
+  else
+    -- Fallback
+    self:add_log("DEBUG", tostring(debugger) .. " " .. tostring(message))
   end
 end
 
----@return table<string, string>
-function Debug.get_logs(self)
+-- Get all logs
+function Debug:get_logs()
   return self.log
 end
 
----@param path? string
-function Debug.save_logs(self, path)
+-- Save logs to a file
+function Debug:save_logs(path)
   if not path then
-    local file = io.open(self.log_directory .. "/logs_export.txt", "w")
-    if file then
-      for _, log_entry in ipairs(self:get_logs()) do
-        file:write(log_entry .. "\n")
-      end
-      file:close()
+    -- Use default path
+    if not self.log_directory then
+      self:init_log_directory()
     end
-  else
-    self:add_default_log_dir(path)
-    local file = io.open(self.log_directory .. "/logs_export.txt", "w")
-    if file then
-      for _, log_entry in ipairs(self:get_logs()) do
-        file:write(log_entry .. "\n")
-      end
-      file:close()
-    end
-  end
-end
-
-function Debug.clear()
-  Debug:ensure_log_directory_exists()
-  local file = io.open(Debug.log_directory .. "/debug.log", "w")
-  if file then
-    file:write("")
-    file:close()
-  end
-  Debug:add_log("INFO", "Cleared logs")
-end
-
-function Debug.set_log_level(self, level)
-  self.log_level = LOG_LEVELS[level]
-end
-
-function Debug.set_file_logging(self, enabled)
-  self.flag_file_logging = enabled
-end
-
-function Debug.set_max_logs(self, max)
-  self.max_logs = max
-end
-
----Logs a value with a description
----@param self any The Debug module
----@param description string Description of the value
----@param value any The value to log
-function Debug.debugValue(self, description, value)
-  if not Debug.is_enabled then
-    return
+    path = self.log_directory .. "/debug_export_" .. os.date("%Y%m%d_%H%M%S") .. ".log"
   end
   
-  local valueString = Debug.valueToString(value)
-  Debug.debug(self, description .. ": " .. valueString)
+  local success, err = Logger.save_logs(self.log, path)
+  if not success then
+    self:error("Failed to save logs: " .. tostring(err))
+    return false
+  end
+  
+  self:info("Logs saved to: " .. path)
+  return true
 end
 
----Converts a value to a string representation
----@param value any The value to convert
----@return string The string representation
-function Debug.valueToString(value)
-  local valueType = type(value)
-  
-  if valueType == "nil" then
-    return "nil"
-  elseif valueType == "number" or valueType == "string" or valueType == "boolean" then
-    return tostring(value)
-  elseif valueType == "table" then
-    return Debug.tableToString(value)
-  elseif valueType == "function" then
-    return "function"
-  else
-    return tostring(value)
+-- Clear all logs
+function Debug:clear()
+  if self and self.log then
+    self.log = {}
   end
+  Display.clear()
+  return true
 end
 
----Converts a table to a string representation
----@param t table The table to convert
----@param depth number Optional recursion depth
----@return string The string representation
-function Debug.tableToString(t, depth)
-  depth = depth or 0
-  local maxDepth = 2
-  
-  if depth > maxDepth then
-    return "{...}"
-  end
-  
-  local result = "{"
-  local first = true
-  
-  for k, v in pairs(t) do
-    if not first then
-      result = result .. ", "
-    end
-    first = false
-    
-    -- Convert key
-    if type(k) == "string" then
-      result = result .. k
-    else
-      result = result .. "[" .. tostring(k) .. "]"
-    end
-    
-    result = result .. "="
-    
-    -- Convert value based on type
-    if type(v) == "table" then
-      result = result .. Debug.tableToString(v, depth + 1)
-    elseif type(v) == "string" then
-      result = result .. '"' .. v .. '"'
-    else
-      result = result .. tostring(v)
-    end
-  end
-  
-  result = result .. "}"
-  return result
+-- Static version of clear for global usage
+function Debug.clear_logs()
+  Display.clear()
+  return true
 end
 
----Clears the debug message history
-function Debug.clear()
-  Debug.messages = {}
+-- Toggle debug visibility
+function Debug:toggle()
+  self.is_enabled = Display.toggle()
+  print("Debug mode " .. (self.is_enabled and "enabled" or "disabled"))
+  return self.is_enabled
 end
 
----Toggles debug mode
-function Debug.toggle()
-  Debug.is_enabled = not Debug.is_enabled
-  print("Debug mode " .. (Debug.is_enabled and "enabled" or "disabled"))
+-- Draw debug information
+function Debug:draw()
+  Display.draw()
 end
 
----Draws the debug overlay
-function Debug.draw()
-  if not Debug.is_enabled then
-    return
+-- Create global instance for direct access
+local function initialize_global_instance()
+  if not _G.DEBUG then
+    _G.DEBUG = Debug:new()
+    _G.DEBUG:init_log_directory()
   end
-  
-  -- Get message count
-  local message_count = #Debug.messages
-  if message_count == 0 then
-    -- Add a default message when no messages exist yet
-    table.insert(Debug.messages, "Debug enabled - no messages yet")
-    message_count = 1
-  end
-  
-  local love = require("love")
-  local r, g, b, a = love.graphics.getColor()
-  
-  -- Draw background
-  love.graphics.setColor(0, 0, 0, 0.8)
-  love.graphics.rectangle("fill", 10, 10, 500, math.min(20 * message_count + 30, 400))
-  
-  -- Draw border
-  love.graphics.setColor(1, 1, 1, 0.8)
-  love.graphics.rectangle("line", 10, 10, 500, math.min(20 * message_count + 30, 400))
-  
-  -- Draw title
-  love.graphics.setColor(1, 1, 0, 1)
-  love.graphics.print("DEBUG OUTPUT (" .. message_count .. " messages)", 20, 20)
-  
-  -- Show an indicator that debug is working
-  love.graphics.setColor(0, 1, 0, 1)
-  love.graphics.circle("fill", 490, 20, 5)
-  
-  -- Draw messages (limit to prevent overflow)
-  love.graphics.setColor(1, 1, 1, 1)
-  local max_visible = math.min(message_count, 18)
-  for i = 1, max_visible do
-    local y_pos = 20 + i * 20
-    if y_pos < 400 then  -- Only draw messages that fit
-      love.graphics.print(Debug.messages[i], 20, y_pos)
-    end
-  end
-  
-  -- Restore color
-  love.graphics.setColor(r, g, b, a)
+  return _G.DEBUG
 end
+
+-- Initialize and return the global instance
+local global_instance = initialize_global_instance()
+setmetatable(Debug, {__index = global_instance})
 
 return Debug 

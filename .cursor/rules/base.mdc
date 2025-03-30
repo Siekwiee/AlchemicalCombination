@@ -1,5 +1,34 @@
 ---
 description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
+```mdc.rules
+language: lua
+ruleset:
+
+  code_style:
+    naming:
+      variables: snake_case
+      functions: snake_case
+      modules: PascalCase
+      constants: UPPER_SNAKE_CASE
+      private_prefix: "_"
+
+  performance:
+    table_handling:
+      preallocate: true
+      avoid_loop_creation: true
+      concat_strings: true
+    variables:
+      prefer_local: true
+      cache_frequent_access: true
+
+  ## Quick Fixes
+<!-- Cursor-Fix: suggest -->
+1. Convert global → local
+2. Add pcall/xpcall wrapper
+3. Replace string.. with table.concat
+4. Generate parameter validation
+5. Create test stub
+6. Extract to module

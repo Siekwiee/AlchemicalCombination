@@ -25,25 +25,28 @@ GameState.STATE_TYPES = {
 
 ---@return GameState
 function GameState:new()
-  setmetatable({}, { __index = GameState })
+  local instance = {}
+  setmetatable(instance, { __index = GameState })
   
   -- initialize time
-  self.total_time = 0
-  self.dt = 0
+  instance.total_time = 0
+  instance.dt = 0
   
-  self.states = {}
+  instance.states = {}
 
   -- Create game systems 
-  self.debug = Debug:init(true, "DEBUG")
-  --initialize gamestate
-  self.current_state = MainMenu:new()
+  instance.debug = Debug
+  -- Create input manager first so it can be provided to states
+  instance.input_manager = InputManager:new(instance)
 
-  --TODO Add UIManager
-  self.renderer = Renderer:new()
-  self.input_manager = InputManager:new(self)
+  -- Initialize renderer
+  instance.renderer = Renderer:new()
 
-  self:init()
-  return self
+  -- Create initial state (main menu)
+  instance.current_state = MainMenu:new()
+
+  instance:init()
+  return instance
 end
 
 function GameState:init()
@@ -52,19 +55,22 @@ function GameState:init()
     self.current_state:init()
   end
 
-  self.debug:debug("GameState initialized")
+  Debug.debug(Debug, "GameState initialized")
 end
 
 ---Switch to a different game state
 ---@param state_name string The name of the state to switch to
 ---@return boolean Whether the state switch was successful
 function GameState:switch_state(state_name)
-  self.debug:debug("Switching to state: " .. state_name)
+  Debug.debug(Debug, "Switching to state: " .. state_name)
   
   -- Reset UI state
   if self.ui_manager then
     self.ui_manager = nil
   end
+  
+  -- Store current input manager to reuse
+  local input_manager = self.input_manager
   
   -- Handle different state types
   if state_name == GameState.STATE_TYPES.MENU then
@@ -75,6 +81,10 @@ function GameState:switch_state(state_name)
     -- Lazy load the PlayState to avoid circular dependencies
     local PlayState = require("src.gamestate.play_state")
     self.current_state = PlayState:new()
+    -- Set the global input manager on the new state
+    if not self.current_state.input_manager and input_manager then
+      self.current_state.input_manager = input_manager
+    end
     return true
   elseif state_name == GameState.STATE_TYPES.SETTINGS then
     -- Lazy load the SettingsState to avoid circular dependencies
@@ -83,7 +93,7 @@ function GameState:switch_state(state_name)
     return true
   end
   
-  self.debug:debug("Unknown state: " .. state_name)
+  Debug.debug(Debug, "Unknown state: " .. state_name)
   return false
 end
 
@@ -96,8 +106,8 @@ function GameState:update(dt)
 end
 
 function GameState:draw()
-    -- Clear screen
-    love.graphics.clear(0.1, 0.1, 0.15)
+  -- Clear screen
+  love.graphics.clear(0.1, 0.1, 0.15)
   if self.current_state and self.current_state.draw then
     self.current_state:draw()
   end
@@ -118,7 +128,5 @@ end
 function GameState:mousemoved(x, y, dx, dy)
   self.input_manager:mousemoved(x, y, dx, dy)
 end
-
-
 
 return GameState

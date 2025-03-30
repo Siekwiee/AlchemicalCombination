@@ -22,6 +22,9 @@ function UIModularGrid:new(config)
   grid.visible = config.visible or true
   grid.enabled = config.enabled or true
   
+  -- Store reference to input manager if provided
+  grid.input_manager = config.input_manager
+  
   return grid
 end
 
@@ -73,6 +76,12 @@ function UIModularGrid:remove_item(row, col)
   return self.core:remove_item(row, col)
 end
 
+---Sets the input manager for this grid
+---@param input_manager table The input manager to use
+function UIModularGrid:set_input_manager(input_manager)
+  self.input_manager = input_manager
+end
+
 ---Handles mouse pressed events
 ---@param x number Mouse x position
 ---@param y number Mouse y position
@@ -83,8 +92,8 @@ function UIModularGrid:handle_mouse_pressed(x, y, button)
     return false
   end
   
-  -- Forward to the core grid
-  return self.core:handle_mouse_pressed(x, y, button)
+  -- Forward to the core grid, passing the input manager
+  return self.core:handle_mouse_pressed(x, y, button, self.input_manager)
 end
 
 ---Handles mouse released events
