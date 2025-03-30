@@ -114,7 +114,17 @@ function GameState:draw()
 end
 
 function GameState:keypressed(key, scancode, isrepeat)
-  self.input_manager:keypressed(key, scancode, isrepeat)
+  -- Forward keypressed to input manager
+  Debug.debug(Debug, "GameState:keypressed - Key: " .. tostring(key))
+  
+  if self.input_manager then
+    self.input_manager:keypressed(key, scancode, isrepeat)
+  end
+  
+  -- Also forward to current state if it has a keypressed method
+  if self.current_state and self.current_state.keypressed then
+    self.current_state:keypressed(key, scancode, isrepeat)
+  end
 end
 
 function GameState:mousepressed(x, y, button)

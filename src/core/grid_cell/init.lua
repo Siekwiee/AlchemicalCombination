@@ -24,8 +24,16 @@ function GridCell:add_item(item)
   return GridCellCore.add_item(self, item)
 end
 
+---Removes the item from this cell
+---@return table|nil The removed item, or nil if there was no item
 function GridCell:remove_item()
-  return GridCellCore.remove_item(self)
+  if not self.item then
+    return nil
+  end
+  
+  local item = self.item
+  self.item = nil
+  return item
 end
 
 function GridCell:has_item()

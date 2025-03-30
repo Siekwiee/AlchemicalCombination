@@ -92,6 +92,8 @@ function UIModularGrid:handle_mouse_pressed(x, y, button)
     return false
   end
   
+  Debug.debug(Debug, "UIModularGrid:handle_mouse_pressed - Button " .. button .. " at " .. x .. "," .. y)
+  
   -- Forward to the core grid, passing the input manager
   return self.core:handle_mouse_pressed(x, y, button, self.input_manager)
 end

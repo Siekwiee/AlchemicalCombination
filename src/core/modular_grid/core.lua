@@ -148,7 +148,15 @@ function ModularGridCore.remove_item(grid, row, col)
     return nil
   end
   
-  return cell:remove_item()
+  if not cell.item then
+    Debug.debug(Debug, "ModularGridCore.remove_item: Cell has no item")
+    return nil
+  end
+  
+  local item = cell.item
+  cell.item = nil
+  Debug.debug(Debug, "ModularGridCore.remove_item: Removed item " .. (item.name or "unnamed"))
+  return item
 end
 
 ---Combines items from two cells
@@ -193,20 +201,13 @@ end
 ---@param input_manager table Optional InputManager instance
 ---@return boolean Whether the input was handled
 function ModularGridCore.handle_mouse_pressed(grid, x, y, button, input_manager)
-  -- If we have an input manager, use it
-  if input_manager and input_manager.handle_grid_click then
+    -- Require input manager
+    if not input_manager or not input_manager.handle_grid_click then
+        Debug.debug(Debug, "ERROR: ModularGridCore.handle_mouse_pressed - No valid input manager provided")
+        return false
+    end
+    
     return input_manager:handle_grid_click(grid, x, y, button)
-  end
-  
-  -- For backwards compatibility, if no input manager is provided
-  -- Try to find it in the global state
-  if _G.STATE and _G.STATE.input_manager and _G.STATE.input_manager.handle_grid_click then
-    return _G.STATE.input_manager:handle_grid_click(grid, x, y, button)
-  end
-  
-  -- Fallback in case we can't find an input manager
-  Debug.debug(Debug, "WARNING: No InputManager available, grid interaction disabled")
-  return false
 end
 
 ---Handles mouse release on the grid
@@ -216,8 +217,23 @@ end
 ---@param button number The mouse button that was released
 ---@return boolean Whether the input was handled
 function ModularGridCore.handle_mouse_released(grid, x, y, button)
-  -- No special handling needed for mouse release in click-based system
-  return false
+    -- Handle selection clearing
+    if grid.selected_cell then
+        local was_selected = grid.selected_cell
+        grid.selected_cell.active = false
+        grid.selected_cell = nil
+        Debug.debug(Debug, "ModularGridCore.handle_mouse_released - Cleared selection from cell: " .. was_selected.id)
+        return true
+    end
+    
+    -- Handle active cell state
+    if grid.active_cell then
+        grid.active_cell.hover = false
+        grid.active_cell = nil
+        return true
+    end
+    
+    return false
 end
 
 return ModularGridCore 

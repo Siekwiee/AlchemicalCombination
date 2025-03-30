@@ -43,6 +43,12 @@ function UIManager:init_elements()
     self.elements.modular_grid = self.game_state.components.modular_grid
     Debug.debug(Debug, "UIManager:init_elements - Found modular grid")
   end
+  
+  -- Load inventory if it exists in game state
+  if self.game_state and self.game_state.components and self.game_state.components.inventory then
+    self.elements.inventory = self.game_state.components.inventory
+    Debug.debug(Debug, "UIManager:init_elements - Found inventory")
+  end
 end
 
 function UIManager:update(dt)
@@ -68,19 +74,38 @@ function UIManager:draw()
   if self.elements.modular_grid and self.elements.modular_grid.draw then
     self.elements.modular_grid:draw()
   end
+  
+  -- Draw inventory (on top of everything else)
+  if self.elements.inventory and self.elements.inventory.draw then
+    self.elements.inventory:draw()
+  end
 end
 
 function UIManager:handle_mouse_pressed(x, y, button)
-  -- Handle modular grid first if it exists
+  -- Handle inventory first if it exists and is visible
+  if self.elements.inventory and 
+     self.elements.inventory.visible and 
+     self.elements.inventory.handle_mouse_pressed and 
+     self.elements.inventory:handle_mouse_pressed(x, y, button) then
+    Debug.debug(Debug, "UIManager:handle_mouse_pressed - Handled by inventory")
+    return true
+  end
+  
+  -- Handle modular grid if inventory didn't handle it
   if self.elements.modular_grid and self.elements.modular_grid.handle_mouse_pressed then
     if self.elements.modular_grid:handle_mouse_pressed(x, y, button) then
+      Debug.debug(Debug, "UIManager:handle_mouse_pressed - Handled by modular grid")
       return true
     end
   end
   
   -- Handle mouse input for other UI elements
   for name, element in pairs(self.elements) do
-    if name ~= "modular_grid" and element.check_click and element:check_click(x, y, button) then
+    if name ~= "modular_grid" and 
+       name ~= "inventory" and 
+       element.check_click and 
+       element:check_click(x, y, button) then
+      Debug.debug(Debug, "UIManager:handle_mouse_pressed - Handled by element: " .. name)
       return true -- Input was handled by UI
     end
   end

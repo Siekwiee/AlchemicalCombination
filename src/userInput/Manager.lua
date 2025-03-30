@@ -228,93 +228,135 @@ function InputManager:handle_mouse_moved_playing(x, y, dx, dy)
   end
 end
 
----Handles grid interaction logic, extracted from ModularGridCore
+---Handles grid interaction logic
 ---@param grid table The grid to handle input for
 ---@param x number Mouse x position
 ---@param y number Mouse y position
 ---@param button number The mouse button that was pressed
 ---@return boolean Whether the input was handled
 function InputManager:handle_grid_click(grid, x, y, button)
-  -- Only handle left clicks
-  if button ~= 1 then
-    return false
-  end
-  
-  Debug.debug(Debug, "----- GRID CLICK EVENT -----")
-  Debug.debug(Debug, "Mouse clicked at (" .. x .. "," .. y .. ") with button " .. button)
-  Debug.debug(Debug, "Grid position: (" .. grid.x .. "," .. grid.y .. "), dimensions: " .. grid.width .. "x" .. grid.height)
-  
-  -- Ensure grid has an item manager
-  if not grid.item_manager then
-    Debug.debug(Debug, "ERROR: Grid has NO ITEM MANAGER!")
-    -- Create one immediately
-    local ItemManager = require("src.core.items.manager")
-    grid.item_manager = ItemManager:new()
-  else
-    Debug.debug(Debug, "Grid has item manager: " .. tostring(grid.item_manager))
-  end
-  
-  Debug.debug(Debug, "Current selected cell: " .. (grid.selected_cell and grid.selected_cell.id or "none"))
-  
-  -- Check if click is within grid bounds
-  if x < grid.x or x > grid.x + grid.width or y < grid.y or y > grid.y + grid.height then
-    Debug.debug(Debug, "Click OUTSIDE grid bounds")
-    if grid.selected_cell then
-      Debug.debug(Debug, "Clearing selection (was " .. grid.selected_cell.id .. ")")
-      grid.selected_cell.active = false
-      grid.selected_cell = nil
+    -- Convert to local grid coordinates
+    local rel_x = x - grid.x
+    local rel_y = y - grid.y
+    
+    -- Check if click is within grid bounds
+    if rel_x < 0 or rel_x > grid.width or 
+       rel_y < 0 or rel_y > grid.height then
+        Debug.debug(Debug, "InputManager:handle_grid_click - Click outside grid bounds")
+        -- Clear selection if clicking outside
+        if grid.selected_cell then
+            grid.selected_cell.active = false
+            grid.selected_cell = nil
+        end
+        return false
     end
-    return false
-  end
-  
-  Debug.debug(Debug, "Click INSIDE grid bounds")
-  
-  -- Find which cell was clicked
-  local clicked_cell = nil
-  for id, cell in pairs(grid.cells) do
-    if x >= cell.x and x < cell.x + cell.width and
-       y >= cell.y and y < cell.y + cell.height then
-      clicked_cell = cell
-      Debug.debug(Debug, "FOUND clicked cell: " .. id)
-      break
+    
+    -- Calculate cell position
+    local col = math.floor(rel_x / (grid.cell_width + grid.spacing)) + 1
+    local row = math.floor(rel_y / (grid.cell_height + grid.spacing)) + 1
+    
+    -- Validate cell position
+    if row < 1 or row > grid.rows or col < 1 or col > grid.cols then
+        Debug.debug(Debug, "InputManager:handle_grid_click - Invalid cell position")
+        return false
     end
-  end
-  
-  -- If no cell was found (shouldn't happen but just in case)
-  if not clicked_cell then
-    Debug.debug(Debug, "ERROR: No cell found at click position despite being in grid bounds!")
-    return false
-  end
-  
-  -- Check if the clicked cell has an item
-  if not clicked_cell.item then
-    Debug.debug(Debug, "Clicked cell " .. clicked_cell.id .. " has NO ITEM")
-    if grid.selected_cell then
-      Debug.debug(Debug, "Clearing selection (was " .. grid.selected_cell.id .. ")")
-      grid.selected_cell.active = false
-      grid.selected_cell = nil
+    
+    local cell = grid:get_cell_at(row, col)
+    if not cell then
+        Debug.debug(Debug, "InputManager:handle_grid_click - No cell found at position")
+        return false
     end
-    return true
-  else
-    Debug.debug(Debug, "Clicked cell " .. clicked_cell.id .. " has item: " .. (clicked_cell.item.name or "unnamed"))
+    
+    -- Handle right-click (transfer to inventory)
+    if button == 2 then
+        if cell.item then
+            Debug.debug(Debug, "InputManager:handle_grid_click - Right click on item: " .. (cell.item.name or "unnamed"))
+            
+            -- Get reference to inventory from game state
+            local inventory = self.game_state.components.inventory
+            if not inventory then
+                Debug.debug(Debug, "InputManager:handle_grid_click - No inventory found")
+                return false
+            end
+            
+            -- Store item reference and remove from cell
+            local item = cell.item
+            cell.item = nil
+            
+            -- Try to add to inventory
+            local success = inventory:add_item(item)
+            if success then
+                Debug.debug(Debug, "InputManager:handle_grid_click - Successfully transferred item to inventory")
+                return true
+            else
+                -- Put item back if transfer failed
+                cell.item = item
+                Debug.debug(Debug, "InputManager:handle_grid_click - Failed to transfer item to inventory")
+                return false
+            end
+        end
+        return false
+    end
+    
+    -- Handle left-click (selection and combination)
+    if button == 1 then
+        -- If we have a selected inventory item, try to place it
+        local inventory = self.game_state.components.inventory
+        if inventory and inventory.selected_slot then
+            local item = inventory:get_selected_item()
+            if item and not cell.item then
+                -- Remove from inventory and add to grid
+                item = inventory:remove_selected_item()
+                cell.item = item
+                Debug.debug(Debug, "InputManager:handle_grid_click - Placed inventory item in grid")
+                return true
+            end
+            return false
+        end
+        
+        -- If we already have a selected cell
+        if grid.selected_cell then
+            -- If clicking the same cell, deselect it
+            if grid.selected_cell == cell then
+                grid.selected_cell.active = false
+                grid.selected_cell = nil
+                Debug.debug(Debug, "InputManager:handle_grid_click - Deselected cell")
+                return true
+            end
+            
+            -- Try to combine items
+            if cell.item then
+                local success = grid:combine_items(grid.selected_cell, cell)
+                grid.selected_cell.active = false
+                grid.selected_cell = nil
+                Debug.debug(Debug, "InputManager:handle_grid_click - Combination " .. (success and "succeeded" or "failed"))
+                return success
+            end
+        end
+        
+        -- Select the clicked cell if it has an item
+        if cell.item then
+            if grid.selected_cell then
+                grid.selected_cell.active = false
+            end
+            grid.selected_cell = cell
+            cell.active = true
+            Debug.debug(Debug, "InputManager:handle_grid_click - Selected cell with item: " .. (cell.item.name or "unnamed"))
+            return true
+        end
+    end
+    
+    return false
+end
+
+---Gets the inventory component from the game state
+---@return table|nil The inventory UI component or nil if not found
+function InputManager:get_inventory()
+  if not self.game_state or not self.game_state.components then
+    return nil
   end
   
-  -- Toggle cell selection
-  if not grid.selected_cell then
-    Debug.debug(Debug, "SELECTING cell " .. clicked_cell.id)
-    grid.selected_cell = clicked_cell
-    clicked_cell.active = true
-  elseif grid.selected_cell.id == clicked_cell.id then
-    -- Deselect if clicking the same cell
-    Debug.debug(Debug, "DESELECTING cell " .. clicked_cell.id .. " (already selected)")
-    grid.selected_cell.active = false
-    grid.selected_cell = nil
-  else
-    -- We have a selected cell and clicked on a different cell - try to combine
-    return self:handle_grid_combine(grid, grid.selected_cell, clicked_cell)
-  end
-  
-  return true
+  return self.game_state.components.inventory
 end
 
 ---Handles combining items in the grid

@@ -5,6 +5,7 @@ local Renderer = require("src.renderer.init")
 local UIModularGrid = require("src.userInterface.components.modular_grid.init")
 local InputManager = require("src.userInput.Manager")
 local ItemManager = require("src.core.items.manager")
+local UIInventory = require("src.userInterface.components.inventory.init")
 
 local PlayState = {}
 
@@ -58,6 +59,16 @@ function PlayState:init()
         input_manager = self.input_manager  -- Pass the input manager to the grid
     })
     
+    -- Create inventory UI
+    self.components.inventory = UIInventory:new({
+        x = 50,
+        y = 50,
+        max_slots = 10,
+        rows = 2,
+        item_manager = self.components.item_manager,
+        input_manager = self.input_manager
+    })
+    
     -- Add some sample items for testing
     self:add_sample_items()
 end
@@ -85,6 +96,11 @@ function PlayState:update(dt)
     if self.components.modular_grid then
         self.components.modular_grid:update(dt)
     end
+    
+    -- Update inventory
+    if self.components.inventory then
+        self.components.inventory:update(dt)
+    end
 end
 
 function PlayState:draw()
@@ -96,9 +112,17 @@ function PlayState:draw()
     if self.components.modular_grid and self.components.modular_grid.core then
         self.components.modular_grid:draw()
     end
+    
+    -- Draw inventory
+    if self.components.inventory then
+        self.components.inventory:draw()
+    end
 end
 
 function PlayState:keypressed(key, scancode, isrepeat)
+    -- Debug key press
+    Debug.debug(Debug, "PlayState:keypressed - Key: " .. tostring(key))
+    
     -- Handle key press events
     if key == "g" then
         -- Toggle grid visibility
@@ -110,39 +134,79 @@ function PlayState:keypressed(key, scancode, isrepeat)
         if self.components.debug then
             self.components.debug:toggle()
         end
+    elseif key == "i" then
+        -- Toggle inventory
+        Debug.debug(Debug, "PlayState:keypressed - Toggle inventory")
+        if self.components.inventory then
+            self.components.inventory:toggle()
+            Debug.debug(Debug, "PlayState:keypressed - Inventory visibility: " .. tostring(self.components.inventory.visible))
+        end
     end
 end
 
 function PlayState:mousepressed(x, y, button)
     Debug.debug(Debug, "PlayState:mousepressed - Button " .. button .. " at " .. x .. "," .. y)
     
-    -- Check if we have a modular grid
-    if not self.components.modular_grid then
-        Debug.debug(Debug, "PlayState:mousepressed - No modular grid")
+    -- Ensure we have an input manager
+    if not self.input_manager then
+        Debug.debug(Debug, "PlayState:mousepressed - No input manager available")
         return false
     end
     
-    -- Forward to modular grid without additional checks
-    Debug.debug(Debug, "PlayState:mousepressed - Forwarding directly to grid")
-    local result = self.components.modular_grid:handle_mouse_pressed(x, y, button)
-    Debug.debug(Debug, "PlayState:mousepressed - Grid returned: " .. tostring(result))
-    return result
+    -- Handle UI elements in proper priority order
+    
+    -- 1. Try inventory first if visible
+    if self.components.inventory and 
+       self.components.inventory.visible and 
+       self.components.inventory:handle_mouse_pressed(x, y, button) then
+        Debug.debug(Debug, "PlayState:mousepressed - Handled by inventory")
+        return true
+    end
+    
+    -- 2. Try modular grid if available
+    if self.components.modular_grid and self.components.modular_grid.core then
+        -- Let input manager handle all grid interactions
+        local result = self.input_manager:handle_grid_click(
+            self.components.modular_grid.core,
+            x, y, button
+        )
+        Debug.debug(Debug, "PlayState:mousepressed - Grid handling result: " .. tostring(result))
+        return result
+    end
+    
+    return false
 end
 
 function PlayState:mousereleased(x, y, button)
     Debug.debug(Debug, "PlayState:mousereleased - Button " .. button .. " at " .. x .. "," .. y)
     
-    -- Check if we have a modular grid
-    if not self.components.modular_grid then
-        Debug.debug(Debug, "PlayState:mousereleased - No modular grid")
+    -- Ensure we have an input manager
+    if not self.input_manager then
+        Debug.debug(Debug, "PlayState:mousereleased - No input manager available")
         return false
     end
     
-    -- Forward to modular grid without additional checks
-    Debug.debug(Debug, "PlayState:mousereleased - Forwarding directly to grid")
-    local result = self.components.modular_grid:handle_mouse_released(x, y, button)
-    Debug.debug(Debug, "PlayState:mousereleased - Grid returned: " .. tostring(result))
-    return result
+    -- Handle UI elements in proper priority order
+    
+    -- 1. Try inventory first if visible
+    if self.components.inventory and 
+       self.components.inventory.visible and 
+       type(self.components.inventory.handle_mouse_released) == "function" then
+        local result = self.components.inventory:handle_mouse_released(x, y, button)
+        if result then
+            Debug.debug(Debug, "PlayState:mousereleased - Handled by inventory")
+            return true
+        end
+    end
+    
+    -- 2. Try modular grid if available
+    if self.components.modular_grid and self.components.modular_grid.core then
+        local result = self.components.modular_grid:handle_mouse_released(x, y, button)
+        Debug.debug(Debug, "PlayState:mousereleased - Grid handling result: " .. tostring(result))
+        return result
+    end
+    
+    return false
 end
 
 function PlayState:Switchto()
