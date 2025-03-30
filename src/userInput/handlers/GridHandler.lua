@@ -41,7 +41,24 @@ end
 ---@param button number Mouse button that was released
 ---@return boolean Whether the input was handled
 function GridHandler:handle_mouse_released(x, y, button)
-  -- Not currently handling mouse releases for grid
+  -- Get the active grid
+  local grid = self:get_active_grid()
+  if not grid then
+    return false
+  end
+  
+  -- Check if the release is within grid bounds
+  if not self:is_point_in_grid(grid, x, y) then
+    return false
+  end
+  
+  -- If we have a selected cell, return true to indicate we handled the event
+  -- but DON'T clear the selection, so we can combine items later
+  if grid.selected_cell then
+    self:debug("GridHandler:handle_mouse_released - Maintaining selection on cell: " .. grid.selected_cell.id)
+    return true
+  end
+  
   return false
 end
 
@@ -49,12 +66,14 @@ end
 ---@return table|nil The active grid or nil if not found
 function GridHandler:get_active_grid()
   -- Get grid from components or current state
-  if self.game_state.components and self.game_state.components.grid then
-    return self.game_state.components.grid
-  elseif self.game_state.current_state and self.game_state.current_state.grid then
-    return self.game_state.current_state.grid
+  if self.game_state.components and self.game_state.components.modular_grid then
+    return self.game_state.components.modular_grid.core
+  elseif self.game_state.current_state and self.game_state.current_state.components and 
+         self.game_state.current_state.components.modular_grid then
+    return self.game_state.current_state.components.modular_grid.core
   end
   
+  Debug.debug(Debug, "GridHandler:get_active_grid - No grid found in game state")
   return nil
 end
 
@@ -170,7 +189,7 @@ function GridHandler:handle_left_click(grid, cell)
   local inventory = self:get_inventory()
   if inventory and inventory.selected_slot then
     local item = inventory:get_selected_item()
-    if item and not cell.item then
+    if item then
       -- Remove from inventory and add to grid
       item = inventory:remove_selected_item()
       cell.item = item
@@ -217,11 +236,17 @@ end
 ---Gets the inventory component from the game state
 ---@return table|nil The inventory UI component or nil if not found
 function GridHandler:get_inventory()
-  if not self.game_state or not self.game_state.components then
-    return nil
+  local inventory = nil
+  
+  -- Try to find inventory in different possible locations in the game state
+  if self.game_state.components and self.game_state.components.inventory then
+    inventory = self.game_state.components.inventory
+  elseif self.game_state.current_state and self.game_state.current_state.components and 
+         self.game_state.current_state.components.inventory then
+    inventory = self.game_state.current_state.components.inventory
   end
   
-  return self.game_state.components.inventory
+  return inventory
 end
 
 ---Handles combining items in the grid

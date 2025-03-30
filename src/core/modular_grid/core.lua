@@ -202,12 +202,23 @@ end
 ---@return boolean Whether the input was handled
 function ModularGridCore.handle_mouse_pressed(grid, x, y, button, input_manager)
     -- Require input manager
-    if not input_manager or not input_manager.handle_grid_click then
-        Debug.debug(Debug, "ERROR: ModularGridCore.handle_mouse_pressed - No valid input manager provided")
+    if not input_manager then
+        Debug.debug(Debug, "ERROR: ModularGridCore.handle_mouse_pressed - No input manager provided")
         return false
     end
     
-    return input_manager:handle_grid_click(grid, x, y, button)
+    -- Check if using new or old input manager API
+    if input_manager.handlers and input_manager.handlers.grid then
+        Debug.debug(Debug, "ModularGridCore - Using new InputManager API")
+        return input_manager.handlers.grid:handle_mouse_pressed(x, y, button)
+    elseif input_manager.handle_grid_click then
+        -- Fallback to legacy method for backward compatibility
+        Debug.debug(Debug, "ModularGridCore - Using legacy InputManager API")
+        return input_manager:handle_grid_click(grid, x, y, button)
+    else
+        Debug.debug(Debug, "ERROR: ModularGridCore.handle_mouse_pressed - InputManager has no grid handler")
+        return false
+    end
 end
 
 ---Handles mouse release on the grid
@@ -217,19 +228,17 @@ end
 ---@param button number The mouse button that was released
 ---@return boolean Whether the input was handled
 function ModularGridCore.handle_mouse_released(grid, x, y, button)
-    -- Handle selection clearing
+    -- Don't clear selections on mouse release anymore
+    -- Just indicate we've handled the event if there's a selected cell
     if grid.selected_cell then
-        local was_selected = grid.selected_cell
-        grid.selected_cell.active = false
-        grid.selected_cell = nil
-        Debug.debug(Debug, "ModularGridCore.handle_mouse_released - Cleared selection from cell: " .. was_selected.id)
+        Debug.debug(Debug, "ModularGridCore.handle_mouse_released - Maintaining selection on cell: " .. grid.selected_cell.id)
         return true
     end
     
-    -- Handle active cell state
+    -- Handle active cell state (just clear hover)
     if grid.active_cell then
         grid.active_cell.hover = false
-        grid.active_cell = nil
+        -- Don't clear active_cell reference here, as it messes with hover effects
         return true
     end
     

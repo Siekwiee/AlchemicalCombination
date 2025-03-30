@@ -20,8 +20,13 @@ function love.load()
   
   -- Initialize game states
   state = GameState:new()
+  
   -- Make state available globally
   _G.STATE = state
+  
+  -- Ensure we're starting with the main menu state
+  state:switch_state("menu")
+  
   Debug.clear_logs()
   -- Initialize random seed
   math.randomseed(os.time())

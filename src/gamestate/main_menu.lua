@@ -5,6 +5,8 @@ local Debug = require("src.core.debug.init")
 -- Remove PlayState dependency to avoid circular dependency
 -- local PlayState = require("src.gamestate.play_state")
 local Renderer = require("src.renderer.init")
+local InputManager = require("src.userInput.InputManager")
+
 -- Public interface
 function MainMenu:new()
   local self = setmetatable({}, { __index = self })
@@ -48,17 +50,26 @@ function MainMenu:new()
       text = btn_data.text,
       on_click = btn_data.action
     })
-    for _, ui_button in ipairs(self.ui_buttons) do
-      Debug.debug(Debug, "MainMenu:ui_buttons " .. ui_button.text)
-    end
   end
+  
+  -- Debug log for buttons (move outside the loop)
+  for _, ui_button in ipairs(self.ui_buttons) do
+    Debug.debug(Debug, "MainMenu:ui_buttons " .. ui_button.text)
+  end
+  
+  -- Create input manager for this state
+  self.input_manager = InputManager:new(self)
   
   return self
 end
 
 function MainMenu:update(dt)
-  -- Update all buttons
+  -- Update input manager
+  if self.input_manager then
+    self.input_manager:update(dt)
+  end
   
+  -- Update all buttons
   for _, button in ipairs(self.ui_buttons) do
     button:update(dt)
   end
@@ -71,6 +82,8 @@ function MainMenu:draw()
 end
 
 function MainMenu:mousepressed(x, y, button)
+  Debug.debug(Debug, "MainMenu:mousepressed " .. x .. "," .. y .. " btn:" .. button)
+  
   if button ~= 1 then return end
   
   -- Check if any button was clicked
@@ -82,6 +95,45 @@ function MainMenu:mousepressed(x, y, button)
   end
   
   return false
+end
+
+-- Add input handling methods to properly integrate with InputManager
+function MainMenu:keypressed(key, scancode, isrepeat)
+  Debug.debug(Debug, "MainMenu:keypressed " .. key)
+  -- Your menu-specific key handling logic here
+  
+  -- Forward to input manager if it exists
+  if self.input_manager then
+    self.input_manager:keypressed(key, scancode, isrepeat)
+  end
+end
+
+function MainMenu:keyreleased(key, scancode)
+  -- Forward to input manager if it exists
+  if self.input_manager then
+    self.input_manager:keyreleased(key, scancode)
+  end
+end
+
+function MainMenu:mousereleased(x, y, button)
+  -- Forward to input manager if it exists
+  if self.input_manager then
+    self.input_manager:mousereleased(x, y, button)
+  end
+end
+
+function MainMenu:mousemoved(x, y, dx, dy)
+  -- Forward to input manager if it exists
+  if self.input_manager then
+    self.input_manager:mousemoved(x, y, dx, dy)
+  end
+end
+
+function MainMenu:wheelmoved(x, y)
+  -- Forward to input manager if it exists
+  if self.input_manager then
+    self.input_manager:wheelmoved(x, y)
+  end
 end
 
 return MainMenu

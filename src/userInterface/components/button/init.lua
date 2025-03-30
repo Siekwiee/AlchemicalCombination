@@ -13,7 +13,7 @@ local ButtonViz = require("src.userInterface.components.button.visualization")
 ---@field disabled boolean
 local Button = {}
 Button.__index = Button
----TODO: Add check_click function
+
 ---Creates a new button
 ---@param config table Button configuration with x, y, width, height, text, and on_click properties
 ---@return Button  
@@ -28,7 +28,7 @@ function Button:new(config)
     o.y = config.y or 0
     o.width = config.width or 100
     o.height = config.height or 40
-    o.check_click = ButtonCore.check_click
+    
     -- Optional properties
     o.text = config.text or ""
     o.on_click = config.on_click
@@ -53,10 +53,21 @@ function Button:draw()
 end
 
 function Button:check_click(x, y, button)
+    Debug.debug(Debug, "Button:check_click for " .. self.text .. " at " .. x .. "," .. y)
+    
     if self.disabled then
         return false
     end
-    return ButtonCore.check_click(self, x, y, button)
+    
+    local is_clicked = ButtonCore.check_click(self, x, y, button)
+    
+    if is_clicked and self.on_click then
+        Debug.debug(Debug, "Button clicked: " .. self.text)
+        self.on_click()
+        return true
+    end
+    
+    return false
 end
 
 return Button

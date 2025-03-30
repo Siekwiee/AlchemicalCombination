@@ -149,14 +149,14 @@ function UIInventory:handle_mouse_pressed(x, y, button)
         return false
     end
     
+    Debug.debug(Debug, "UIInventory:handle_mouse_pressed - Check if click in inventory bounds " .. x .. "," .. y)
+    
     -- Check if click is within inventory bounds
     if x < self.x or x > self.x + self.width or y < self.y or y > self.y + self.height then
-        if self.selected_slot then
-            self.selected_slot = nil
-            return true
-        end
         return false
     end
+    
+    Debug.debug(Debug, "UIInventory:handle_mouse_pressed - Click is within inventory bounds")
     
     -- Find which slot was clicked
     for i = 1, self.inventory.max_slots do
@@ -175,15 +175,22 @@ function UIInventory:handle_mouse_pressed(x, y, button)
                 if self.selected_slot == i then
                     -- Deselect if clicking the same slot
                     self.selected_slot = nil
+                    Debug.debug(Debug, "UIInventory:handle_mouse_pressed - Deselected slot " .. i)
                 else
                     self.selected_slot = i
+                    local item = self.inventory:get_item(i)
+                    if item then
+                        Debug.debug(Debug, "UIInventory:handle_mouse_pressed - Selected slot " .. i .. " with item: " .. (item.name or "unnamed"))
+                    else
+                        Debug.debug(Debug, "UIInventory:handle_mouse_pressed - Selected empty slot " .. i)
+                    end
                 end
                 return true
             end
         end
     end
     
-    return true -- Input was handled by inventory UI
+    return true -- Input was handled by inventory UI (clicked in bounds but not on a slot)
 end
 
 ---Handles mouse released events
@@ -196,13 +203,12 @@ function UIInventory:handle_mouse_released(x, y, button)
         return false
     end
     
+    -- IMPORTANT: Never clear selection on mouse release
+    -- This allows inventory items to be placed on the grid
+    
     -- Check if click is within inventory bounds
     if x < self.x or x > self.x + self.width or y < self.y or y > self.y + self.height then
-        -- If we have a selected slot and click outside, clear it
-        if self.selected_slot then
-            self.selected_slot = nil
-            return true
-        end
+        -- Do NOT clear the selection when clicking outside inventory bounds
         return false
     end
     
@@ -222,16 +228,14 @@ function UIInventory:handle_mouse_released(x, y, button)
                 -- If released on a different slot than selected, try to move/swap items
                 if i ~= self.selected_slot then
                     -- TODO: Implement item movement between slots
-                    -- For now, just clear selection
-                    self.selected_slot = nil
+                    -- For now, just keep selection
                     return true
                 end
+                
+                -- Even if released on the same slot, maintain selection
+                return true
             end
         end
-        
-        -- If we get here, released outside any slot
-        self.selected_slot = nil
-        return true
     end
     
     return false

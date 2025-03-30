@@ -3,7 +3,7 @@ local Debug = require("src.core.debug.init")
 local love = require("love")
 local Renderer = require("src.renderer.init")
 local UIModularGrid = require("src.userInterface.components.modular_grid.init")
-local InputManager = require("src.userInput.Manager")
+local InputManager = require("src.userInput.InputManager")
 local ItemManager = require("src.core.items.manager")
 local UIInventory = require("src.userInterface.components.inventory.init")
 
@@ -56,7 +56,8 @@ function PlayState:init()
         cell_height = 64,
         spacing = 8,
         title = nil,
-        input_manager = self.input_manager  -- Pass the input manager to the grid
+        input_manager = self.input_manager,  -- Pass the input manager to the grid
+        item_manager = self.components.item_manager  -- Pass the item manager to the grid
     })
     
     -- Create inventory UI
@@ -153,28 +154,8 @@ function PlayState:mousepressed(x, y, button)
         return false
     end
     
-    -- Handle UI elements in proper priority order
-    
-    -- 1. Try inventory first if visible
-    if self.components.inventory and 
-       self.components.inventory.visible and 
-       self.components.inventory:handle_mouse_pressed(x, y, button) then
-        Debug.debug(Debug, "PlayState:mousepressed - Handled by inventory")
-        return true
-    end
-    
-    -- 2. Try modular grid if available
-    if self.components.modular_grid and self.components.modular_grid.core then
-        -- Let input manager handle all grid interactions
-        local result = self.input_manager:handle_grid_click(
-            self.components.modular_grid.core,
-            x, y, button
-        )
-        Debug.debug(Debug, "PlayState:mousepressed - Grid handling result: " .. tostring(result))
-        return result
-    end
-    
-    return false
+    -- Forward to input manager to handle using its handler system
+    return self.input_manager:mousepressed(x, y, button)
 end
 
 function PlayState:mousereleased(x, y, button)
@@ -186,27 +167,8 @@ function PlayState:mousereleased(x, y, button)
         return false
     end
     
-    -- Handle UI elements in proper priority order
-    
-    -- 1. Try inventory first if visible
-    if self.components.inventory and 
-       self.components.inventory.visible and 
-       type(self.components.inventory.handle_mouse_released) == "function" then
-        local result = self.components.inventory:handle_mouse_released(x, y, button)
-        if result then
-            Debug.debug(Debug, "PlayState:mousereleased - Handled by inventory")
-            return true
-        end
-    end
-    
-    -- 2. Try modular grid if available
-    if self.components.modular_grid and self.components.modular_grid.core then
-        local result = self.components.modular_grid:handle_mouse_released(x, y, button)
-        Debug.debug(Debug, "PlayState:mousereleased - Grid handling result: " .. tostring(result))
-        return result
-    end
-    
-    return false
+    -- Forward to input manager to handle using its handler system
+    return self.input_manager:mousereleased(x, y, button)
 end
 
 function PlayState:Switchto()

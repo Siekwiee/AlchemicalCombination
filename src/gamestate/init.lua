@@ -1,5 +1,5 @@
 -- Import core systems
-local InputManager = require("src.userInput.Manager")
+local InputManager = require("src.userInput.InputManager")
 local Renderer = require("src.renderer.init")
 --TODO Add UiManager
 local Debug = require("src.core.debug.init")
@@ -44,6 +44,11 @@ function GameState:new()
 
   -- Create initial state (main menu)
   instance.current_state = MainMenu:new()
+  
+  -- Connect input manager to the current state
+  if instance.current_state and not instance.current_state.input_manager then
+    instance.current_state.input_manager = instance.input_manager
+  end
 
   instance:init()
   return instance
@@ -76,6 +81,10 @@ function GameState:switch_state(state_name)
   if state_name == GameState.STATE_TYPES.MENU then
     -- We don't require MainMenu here since it would create a circular dependency
     self.current_state = MainMenu:new()
+    -- Set the global input manager on the new state
+    if not self.current_state.input_manager and input_manager then
+      self.current_state.input_manager = input_manager
+    end
     return true
   elseif state_name == GameState.STATE_TYPES.PLAY then
     -- Lazy load the PlayState to avoid circular dependencies
@@ -90,6 +99,10 @@ function GameState:switch_state(state_name)
     -- Lazy load the SettingsState to avoid circular dependencies
     local SettingsState = require("src.gamestate.settings")
     self.current_state = SettingsState:new()
+    -- Set the global input manager on the new state
+    if not self.current_state.input_manager and input_manager then
+      self.current_state.input_manager = input_manager
+    end
     return true
   end
   
@@ -100,6 +113,12 @@ end
 function GameState:update(dt)
   self.total_time = self.total_time + dt
   self.dt = dt
+  
+  -- Update input manager first
+  if self.input_manager then
+    self.input_manager:update(dt)
+  end
+  
   if self.current_state and self.current_state.update then
     self.current_state:update(dt)
   end
@@ -128,15 +147,42 @@ function GameState:keypressed(key, scancode, isrepeat)
 end
 
 function GameState:mousepressed(x, y, button)
-  self.input_manager:mousepressed(x, y, button)
+  Debug.debug(Debug, "GameState:mousepressed - " .. x .. "," .. y .. " btn:" .. button)
+  
+  -- Forward to input manager
+  if self.input_manager then
+    self.input_manager:mousepressed(x, y, button)
+  end
+  
+  -- Also forward to current state if it has a mousepressed method
+  if self.current_state and self.current_state.mousepressed then
+    Debug.debug(Debug, "Forwarding mousepressed to current state")
+    self.current_state:mousepressed(x, y, button)
+  end
 end
 
 function GameState:mousereleased(x, y, button)
-  self.input_manager:mousereleased(x, y, button)
+  -- Forward to input manager
+  if self.input_manager then
+    self.input_manager:mousereleased(x, y, button)
+  end
+  
+  -- Also forward to current state if it has a mousereleased method
+  if self.current_state and self.current_state.mousereleased then
+    self.current_state:mousereleased(x, y, button)
+  end
 end
 
 function GameState:mousemoved(x, y, dx, dy)
-  self.input_manager:mousemoved(x, y, dx, dy)
+  -- Forward to input manager
+  if self.input_manager then
+    self.input_manager:mousemoved(x, y, dx, dy)
+  end
+  
+  -- Also forward to current state if it has a mousemoved method
+  if self.current_state and self.current_state.mousemoved then
+    self.current_state:mousemoved(x, y, dx, dy)
+  end
 end
 
 return GameState

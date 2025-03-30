@@ -34,6 +34,14 @@ function ModularGrid.new(config)
     grid.spacing = config.spacing or 8
     grid.title = config.title
     
+    -- Initialize item manager - either use provided one or create a new one
+    if config.item_manager then
+        grid.item_manager = config.item_manager
+    else
+        local ItemManager = require("src.core.items.manager")
+        grid.item_manager = ItemManager:new()
+    end
+    
     -- Calculate total dimensions
     grid.width = grid.cols * grid.cell_width + (grid.cols - 1) * grid.spacing
     grid.height = grid.rows * grid.cell_height + (grid.rows - 1) * grid.spacing

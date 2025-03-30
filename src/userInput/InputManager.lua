@@ -151,25 +151,43 @@ function InputManager:mousepressed(x, y, button)
   -- Debug output
   self:debug("mousepressed", x .. "," .. y .. " btn:" .. button)
   
+  -- Set up a handled flag to check if any handler processed the event
+  local handled = false
+  
   -- Forward to UI manager first (high priority)
   if self.handlers.ui:handle_mouse_pressed(x, y, button) then
-    return
+    self:debug("mousepressed handled by UI manager")
+    return true
+  end
+  
+  -- Check for inventory interaction if available
+  if self.game_state and self.game_state.components and self.game_state.components.inventory then
+    local inventory = self.game_state.components.inventory
+    if inventory.visible and inventory:handle_mouse_pressed(x, y, button) then
+      self:debug("mousepressed handled by inventory")
+      return true
+    end
   end
   
   -- Forward to current state handler
   if self.handlers.state and self.handlers.state:handle_mouse_pressed(x, y, button) then
-    return
+    self:debug("mousepressed handled by state handler")
+    return true
   end
   
   -- Forward to grid handler
   if self.handlers.grid:handle_mouse_pressed(x, y, button) then
-    return
+    self:debug("mousepressed handled by grid handler")
+    return true
   end
   
   -- Forward to inventory handler
   if self.handlers.inventory:handle_mouse_pressed(x, y, button) then
-    return
+    self:debug("mousepressed handled by inventory handler")
+    return true
   end
+  
+  return false
 end
 
 ---Handles mouse release events
@@ -185,23 +203,38 @@ function InputManager:mousereleased(x, y, button)
   
   -- Forward to UI manager first
   if self.handlers.ui:handle_mouse_released(x, y, button) then
-    return
+    self:debug("mousereleased handled by UI manager")
+    return true
+  end
+  
+  -- Check for inventory interaction if available
+  if self.game_state and self.game_state.components and self.game_state.components.inventory then
+    local inventory = self.game_state.components.inventory
+    if inventory.visible and inventory:handle_mouse_released(x, y, button) then
+      self:debug("mousereleased handled by inventory")
+      return true
+    end
   end
   
   -- Forward to current state handler
   if self.handlers.state and self.handlers.state:handle_mouse_released(x, y, button) then
-    return
+    self:debug("mousereleased handled by state handler")
+    return true
   end
   
   -- Forward to grid handler
   if self.handlers.grid:handle_mouse_released(x, y, button) then
-    return
+    self:debug("mousereleased handled by grid handler")
+    return true
   end
   
   -- Forward to inventory handler
   if self.handlers.inventory:handle_mouse_released(x, y, button) then
-    return
+    self:debug("mousereleased handled by inventory handler")
+    return true
   end
+  
+  return false
 end
 
 ---Handles mouse move events

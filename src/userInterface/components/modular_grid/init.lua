@@ -15,7 +15,11 @@ UIModularGrid.__index = UIModularGrid
 function UIModularGrid:new(config)
   local grid = setmetatable({}, self)
   
-  -- Create core grid
+  -- Store reference to item manager if provided
+  grid.item_manager = config.item_manager
+  
+  -- Create core grid (pass on the item manager)
+  config.item_manager = grid.item_manager -- Add item manager to config
   grid.core = ModularGrid.new(config)
   
   -- UI integration properties
