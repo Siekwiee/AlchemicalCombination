@@ -185,11 +185,20 @@ end
 ---@param item table|nil Item in the slot, or nil if empty
 ---@return boolean Whether the input was handled
 function InventoryHandler:handle_inventory_left_click(inventory, slot_index, item)
+  -- Get grid info for coordination
+  local grid = self:get_grid()
+  local grid_core = grid and grid.core or nil
+  
   -- If clicking currently selected slot, deselect it
   if slot_index == inventory.selected_slot then
     inventory.selected_slot = nil
     inventory.selected_item = nil
     return true
+  end
+  
+  -- Clear any existing grid selection first
+  if grid_core and grid_core.selected_cell then
+    grid_core.selected_cell = nil
   end
   
   -- If there's an item in the slot, select it
@@ -223,6 +232,19 @@ function InventoryHandler:handle_inventory_right_click(inventory, slot_index, it
   end
   
   return false
+end
+
+---Gets the grid component from the game state
+---@return table|nil The grid or nil if not found
+function InventoryHandler:get_grid()
+  if self.game_state.components and self.game_state.components.modular_grid then
+    return self.game_state.components.modular_grid
+  elseif self.game_state.current_state and self.game_state.current_state.components and 
+         self.game_state.current_state.components.modular_grid then
+    return self.game_state.current_state.components.modular_grid
+  end
+  
+  return nil
 end
 
 return InventoryHandler 

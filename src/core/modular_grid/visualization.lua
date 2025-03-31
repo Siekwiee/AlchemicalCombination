@@ -6,6 +6,15 @@ local ModularGridVisualization = {}
 ---Draws a modular grid
 ---@param grid table The grid to draw
 function ModularGridVisualization.draw(grid)
+  -- DEBUG: Print selected cell ID at the start of draw
+  if grid then
+    local selected_id = (grid.selected_cell and grid.selected_cell.id) or "nil"
+    print("[DEBUG] Drawing grid. Selected Cell ID: " .. selected_id) 
+  else
+    print("[DEBUG] Drawing grid, but grid object is nil")
+    return -- Cannot draw if grid is nil
+  end
+
   local r, g, b, a = love.graphics.getColor()
   
   -- Draw grid background

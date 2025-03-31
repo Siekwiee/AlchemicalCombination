@@ -36,6 +36,10 @@ function InputManager:new(game_state)
     state = StateHandlerFactory:create_handler(game_state)
   }
   
+  -- Debounce state
+  self.last_mouse_press_time = 0
+  self.debounce_interval = 0.05 -- Ignore clicks within 50ms of the last processed one
+  
   return self
 end
 
@@ -153,27 +157,45 @@ end
 ---@param y number Mouse Y position 
 ---@param button number Mouse button that was pressed
 function InputManager:mousepressed(x, y, button)
-  -- First handle UI through UI handler
-  if self.handlers.ui:handle_mouse_pressed(x, y, button) then
-    return true
+  -- Debounce check
+  local current_time = love.timer.getTime()
+  if current_time - self.last_mouse_press_time < self.debounce_interval then
+      return false -- Ignore this click event
   end
   
-  -- Then handle inventory interactions through dedicated handler
-  if self.handlers.inventory:handle_mouse_pressed(x, y, button) then
-    return true
+  -- Record the time of this processed click
+  self.last_mouse_press_time = current_time
+  
+  -- Process handlers in priority order
+  local handled = false
+  
+  -- Priority 1: UI handler (buttons, windows, etc.)
+  if not handled and self.handlers.ui then
+      handled = self.handlers.ui:handle_mouse_pressed(x, y, button)
   end
   
-  -- Then handle grid interactions through dedicated handler
-  if self.handlers.grid:handle_mouse_pressed(x, y, button) then
-    return true
+  -- Priority 2: Active inventory
+  if not handled and self.handlers.inventory then
+      local inventory = self:get_inventory()
+      if inventory and inventory.visible then
+          handled = self.handlers.inventory:handle_mouse_pressed(x, y, button)
+      end
   end
   
-  -- Finally handle game state specific input
-  if self.handlers.state and self.handlers.state:handle_mouse_pressed(x, y, button) then
-    return true
+  -- Priority 3: Active grid
+  if not handled and self.handlers.grid then
+      local grid = self:get_grid()
+      if grid and grid.visible then
+          handled = self.handlers.grid:handle_mouse_pressed(x, y, button)
+      end
   end
   
-  return false
+  -- Priority 4: Game state handler
+  if not handled and self.handlers.state then
+      handled = self.handlers.state:handle_mouse_pressed(x, y, button)
+  end
+  
+  return handled
 end
 
 ---Handles mouse release events
@@ -181,27 +203,36 @@ end
 ---@param y number Mouse Y position 
 ---@param button number Mouse button that was released
 function InputManager:mousereleased(x, y, button)
-  -- First handle UI through UI handler
-  if self.handlers.ui:handle_mouse_released(x, y, button) then
-    return true
+  -- Process handlers in priority order
+  local handled = false
+  
+  -- Priority 1: UI handler (buttons, windows, etc.)
+  if not handled and self.handlers.ui then
+      handled = self.handlers.ui:handle_mouse_released(x, y, button)
   end
   
-  -- Then handle inventory interactions through dedicated handler
-  if self.handlers.inventory:handle_mouse_released(x, y, button) then
-    return true
+  -- Priority 2: Active inventory
+  if not handled and self.handlers.inventory then
+      local inventory = self:get_inventory()
+      if inventory and inventory.visible then
+          handled = self.handlers.inventory:handle_mouse_released(x, y, button)
+      end
   end
   
-  -- Then handle grid interactions through dedicated handler
-  if self.handlers.grid:handle_mouse_released(x, y, button) then
-    return true
+  -- Priority 3: Active grid
+  if not handled and self.handlers.grid then
+      local grid = self:get_grid()
+      if grid and grid.visible then
+          handled = self.handlers.grid:handle_mouse_released(x, y, button)
+      end
   end
   
-  -- Finally handle game state specific input
-  if self.handlers.state and self.handlers.state:handle_mouse_released(x, y, button) then
-    return true
+  -- Priority 4: Game state handler
+  if not handled and self.handlers.state then
+      handled = self.handlers.state:handle_mouse_released(x, y, button)
   end
   
-  return false
+  return handled
 end
 
 ---Handles mouse move events
@@ -252,6 +283,24 @@ end
 ---@param bindings table Key bindings to set
 function InputManager:set_bindings(bindings)
   self.bindings:set_bindings(bindings)
+end
+
+---Gets the inventory from the game state
+---@return table|nil The inventory or nil if not found
+function InputManager:get_inventory()
+  if self.game_state and self.game_state.components and self.game_state.components.inventory then
+    return self.game_state.components.inventory
+  end
+  return nil
+end
+
+---Gets the grid from the game state
+---@return table|nil The grid or nil if not found
+function InputManager:get_grid()
+  if self.game_state and self.game_state.components and self.game_state.components.modular_grid then
+    return self.game_state.components.modular_grid
+  end
+  return nil
 end
 
 return InputManager 

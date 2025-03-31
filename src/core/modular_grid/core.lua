@@ -190,20 +190,30 @@ end
 ---@param input_manager table Optional InputManager instance
 ---@return boolean Whether the input was handled
 function ModularGridCore.handle_mouse_pressed(grid, x, y, button, input_manager)
+    print("[DEBUG][ModularGridCore.handle_mouse_pressed] Called.") -- DEBUG
     -- Require input manager
     if not input_manager then
+        print("[DEBUG][ModularGridCore.handle_mouse_pressed] No input_manager. Returning false.") -- DEBUG
         return false
     end
     
+    local handled = false
     -- Check if using new or old input manager API
     if input_manager.handlers and input_manager.handlers.grid then
-        return input_manager.handlers.grid:handle_mouse_pressed(x, y, button)
+        print("[DEBUG][ModularGridCore.handle_mouse_pressed] Calling input_manager.handlers.grid:handle_mouse_pressed...") -- DEBUG
+        handled = input_manager.handlers.grid:handle_mouse_pressed(x, y, button)
+        print("[DEBUG][ModularGridCore.handle_mouse_pressed] GridHandler returned: " .. tostring(handled)) -- DEBUG
     elseif input_manager.handle_grid_click then
         -- Fallback to legacy method for backward compatibility
-        return input_manager:handle_grid_click(grid, x, y, button)
+        print("[DEBUG][ModularGridCore.handle_mouse_pressed] Calling legacy input_manager:handle_grid_click...") -- DEBUG
+        handled = input_manager:handle_grid_click(grid, x, y, button)
+        print("[DEBUG][ModularGridCore.handle_mouse_pressed] Legacy handler returned: " .. tostring(handled)) -- DEBUG
     else
-        return false
+        print("[DEBUG][ModularGridCore.handle_mouse_pressed] No grid handler found in input_manager. Returning false.") -- DEBUG
+        handled = false
     end
+    print("[DEBUG][ModularGridCore.handle_mouse_pressed] Returning final value: " .. tostring(handled)) -- DEBUG
+    return handled
 end
 
 ---Handles mouse release on the grid

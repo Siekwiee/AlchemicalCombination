@@ -85,36 +85,28 @@ function UIModularGrid:set_input_manager(input_manager)
   self.input_manager = input_manager
 end
 
----Handles mouse pressed events
+---Handles mouse pressed events - DEPRECATED, use InputManager GridHandler instead
+---@deprecated Use InputManager with GridHandler instead
 ---@param x number Mouse x position
 ---@param y number Mouse y position
 ---@param button number The mouse button that was pressed
 ---@return boolean Whether the input was handled
 function UIModularGrid:handle_mouse_pressed(x, y, button)
-  if not self.visible or not self.enabled then
-    return false
-  end
-  
-  if not self:is_point_inside(x, y) then
-    return false
-  end
-  
-  -- Forward to the core grid, passing the input manager
-  return self.core:handle_mouse_pressed(x, y, button, self.input_manager)
+  -- This method is deprecated and should not be called directly
+  -- Input should be handled by the InputManager and GridHandler
+  return false
 end
 
----Handles mouse released events
+---Handles mouse released events - DEPRECATED, use InputManager GridHandler instead
+---@deprecated Use InputManager with GridHandler instead
 ---@param x number Mouse x position
 ---@param y number Mouse y position
 ---@param button number The mouse button that was released
 ---@return boolean Whether the input was handled
 function UIModularGrid:handle_mouse_released(x, y, button)
-  if not self.visible or not self.enabled then
-    return false
-  end
-  
-  -- Forward to the core grid
-  return self.core:handle_mouse_released(x, y, button)
+  -- This method is deprecated and should not be called directly
+  -- Input should be handled by the InputManager and GridHandler
+  return false
 end
 
 ---Toggles grid visibility

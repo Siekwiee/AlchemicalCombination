@@ -67,31 +67,47 @@ function UIManager:draw()
 end
 
 function UIManager:handle_mouse_pressed(x, y, button)
+  print("[DEBUG][UIManager:handle_mouse_pressed] Called.") -- DEBUG
   -- Handle inventory first if it exists and is visible
   if self.elements.inventory and 
      self.elements.inventory.visible and 
-     self.elements.inventory.handle_mouse_pressed and 
-     self.elements.inventory:handle_mouse_pressed(x, y, button) then
-    return true
+     self.elements.inventory.handle_mouse_pressed then
+     print("[DEBUG][UIManager:handle_mouse_pressed] Checking inventory...") -- DEBUG
+     local handled_inventory = self.elements.inventory:handle_mouse_pressed(x, y, button)
+     if handled_inventory then
+       print("[DEBUG][UIManager:handle_mouse_pressed] Inventory handled click. Returning true.") -- DEBUG
+       return true
+     end
+     print("[DEBUG][UIManager:handle_mouse_pressed] Inventory did not handle click.") -- DEBUG
   end
   
   -- Handle modular grid if inventory didn't handle it
   if self.elements.modular_grid and self.elements.modular_grid.handle_mouse_pressed then
-    if self.elements.modular_grid:handle_mouse_pressed(x, y, button) then
+    print("[DEBUG][UIManager:handle_mouse_pressed] Checking modular grid (UIModularGrid)...") -- DEBUG
+    local handled_grid = self.elements.modular_grid:handle_mouse_pressed(x, y, button)
+    if handled_grid then
+      print("[DEBUG][UIManager:handle_mouse_pressed] Modular grid (UIModularGrid) handled click. Returning true.") -- DEBUG
       return true
     end
+    print("[DEBUG][UIManager:handle_mouse_pressed] Modular grid (UIModularGrid) did not handle click.") -- DEBUG
   end
   
   -- Handle mouse input for other UI elements
+  print("[DEBUG][UIManager:handle_mouse_pressed] Checking other UI elements...") -- DEBUG
   for name, element in pairs(self.elements) do
     if name ~= "modular_grid" and 
        name ~= "inventory" and 
-       element.check_click and 
-       element:check_click(x, y, button) then
-      return true -- Input was handled by UI
+       element.check_click then 
+       print("[DEBUG][UIManager:handle_mouse_pressed] Checking element: " .. name) -- DEBUG
+       local handled_other = element:check_click(x, y, button)
+       if handled_other then
+         print("[DEBUG][UIManager:handle_mouse_pressed] Element '" .. name .. "' handled click. Returning true.") -- DEBUG
+         return true -- Input was handled by UI
+       end
     end
   end
   
+  print("[DEBUG][UIManager:handle_mouse_pressed] No UI element handled click. Returning false.") -- DEBUG
   return false -- Input was not handled by UI
 end
 

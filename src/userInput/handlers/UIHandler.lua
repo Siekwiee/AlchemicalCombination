@@ -54,15 +54,21 @@ end
 ---@param button number Mouse button that was pressed
 ---@return boolean Whether the input was handled
 function UIHandler:handle_mouse_pressed(x, y, button)
+  print("[DEBUG][UIHandler:handle_mouse_pressed] Called.") -- DEBUG
   -- Forward to UI manager if available
   local ui_manager = self:get_ui_manager()
   if ui_manager and ui_manager.handle_mouse_pressed then
+    print("[DEBUG][UIHandler:handle_mouse_pressed] Forwarding to UIManager:handle_mouse_pressed...") -- DEBUG
     local handled = ui_manager:handle_mouse_pressed(x, y, button)
+    print("[DEBUG][UIHandler:handle_mouse_pressed] UIManager returned: " .. tostring(handled) .. ". Returning this value.") -- DEBUG
     if handled then
       return true
     end
+  else
+      print("[DEBUG][UIHandler:handle_mouse_pressed] No ui_manager or handle_mouse_pressed method found.") -- DEBUG
   end
   
+  print("[DEBUG][UIHandler:handle_mouse_pressed] Returning false.") -- DEBUG
   return false
 end
 

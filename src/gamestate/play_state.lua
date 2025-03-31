@@ -5,7 +5,10 @@ local UIModularGrid = require("src.userInterface.components.modular_grid.init")
 local InputManager = require("src.userInput.InputManager")
 local ItemManager = require("src.core.items.manager")
 local UIInventory = require("src.userInterface.components.inventory.init")
-
+local Shop = require("src.core.shop-legacy.init")
+local ShopCore = require("src.core.shop-legacy.core")
+local ShopHandlers = require("src.core.shop-legacy.handlers")
+local ShopDrawing = require("src.core.shop-legacy.drawing")
 local PlayState = {}
 
 ---@class PlayState
@@ -36,8 +39,12 @@ function PlayState:init()
     -- Initialize components
     self.components.item_manager = ItemManager:new()
     
-    -- Initialize input manager
+    -- Initialize input manager first, so other components can use it
     self.input_manager = InputManager:new(self)
+
+    -- Initialize UI Manager
+    local UIManager = require("src.userInterface.Manager")
+    self.ui_manager = UIManager:new(self)
     
     -- Create a modular grid in the center of the screen
     local screen_width, screen_height = love.graphics.getDimensions()
@@ -54,8 +61,8 @@ function PlayState:init()
         cell_height = 64,
         spacing = 8,
         title = nil,
-        input_manager = self.input_manager,  -- Pass the input manager to the grid
-        item_manager = self.components.item_manager  -- Pass the item manager to the grid
+        input_manager = self.input_manager,
+        item_manager = self.components.item_manager
     })
     
     -- Create inventory UI
@@ -68,8 +75,21 @@ function PlayState:init()
         input_manager = self.input_manager
     })
     
+    -- Create shop UI
+    self.components.shop = {
+        instance = Shop:new(),
+        core = ShopCore:new(),
+        handlers = ShopHandlers:new(),
+        drawing = ShopDrawing:new()
+    }
+
+    self.components.shop.instance:setInventory(self.components.inventory)
+
     -- Add some sample items for testing
     self:add_sample_items()
+    
+    -- Initialize renderer
+    self.renderer = Renderer:new()
 end
 
 function PlayState:add_sample_items()
@@ -101,12 +121,13 @@ function PlayState:update(dt)
 end
 
 function PlayState:draw()
-    -- Initialize renderer
-    self.renderer = Renderer:new()
-    self.renderer:draw(self.state_name, self)
+    -- Use the already initialized renderer
+    if self.renderer then
+        self.renderer:draw(self.state_name, self)
+    end
     
-    -- Draw modular grid directly
-    if self.components.modular_grid and self.components.modular_grid.core then
+    -- Draw modular grid
+    if self.components.modular_grid then
         self.components.modular_grid:draw()
     end
     
@@ -114,41 +135,53 @@ function PlayState:draw()
     if self.components.inventory then
         self.components.inventory:draw()
     end
+
+    -- Draw shop
+    if self.components.shop then
+        self.components.shop.drawing:draw(self.components.shop.core, self.components.shop.handlers, self.components.inventory)
+    end
 end
 
 function PlayState:keypressed(key, scancode, isrepeat)
-    -- Handle key press events
+    -- Let the input manager handle keypress first
+    if self.input_manager and self.input_manager:keypressed(key, scancode, isrepeat) then
+        return true
+    end
+    
+    -- Fallback to direct handling for specific keys
     if key == "g" then
         -- Toggle grid visibility
         if self.components.modular_grid then
             self.components.modular_grid:toggle()
+            return true
         end
     elseif key == "i" then
         -- Toggle inventory
         if self.components.inventory then
             self.components.inventory:toggle()
+            return true
         end
     end
+    
+    return false
 end
 
 function PlayState:mousepressed(x, y, button)
-    -- Ensure we have an input manager
-    if not self.input_manager then
-        return false
+    -- ONLY use input manager to handle mouse events
+    -- Never directly call component handlers
+    if self.input_manager then
+        return self.input_manager:mousepressed(x, y, button)
     end
-    
-    -- Forward to input manager to handle using its handler system
-    return self.input_manager:mousepressed(x, y, button)
+    return false
 end
 
 function PlayState:mousereleased(x, y, button)
-    -- Ensure we have an input manager
-    if not self.input_manager then
-        return false
+    -- ONLY use input manager to handle mouse events
+    -- Never directly call component handlers
+    if self.input_manager then
+        return self.input_manager:mousereleased(x, y, button)
     end
-    
-    -- Forward to input manager to handle using its handler system
-    return self.input_manager:mousereleased(x, y, button)
+    return false
 end
 
 function PlayState:Switchto()

@@ -22,16 +22,21 @@ function GridHandler:handle_mouse_pressed(x, y, button)
   -- Check if we have a grid to interact with
   local grid = self:get_active_grid()
   if not grid then
+    print("[DEBUG][GridHandler:handle_mouse_pressed] No active grid. Returning false.") -- DEBUG
     return false
   end
   
   -- Check if the click is within grid bounds
   if not self:is_point_in_grid(grid, x, y) then
+    print("[DEBUG][GridHandler:handle_mouse_pressed] Click outside grid bounds. Returning false.") -- DEBUG
     return false
   end
   
   -- Process the grid click
-  return self:handle_grid_click(grid, x, y, button)
+  print("[DEBUG][GridHandler:handle_mouse_pressed] Click in bounds, calling handle_grid_click...") -- DEBUG
+  local handled = self:handle_grid_click(grid, x, y, button)
+  print("[DEBUG][GridHandler:handle_mouse_pressed] handle_grid_click returned: " .. tostring(handled) .. ". Returning this value.") -- DEBUG
+  return handled
 end
 
 ---Handles mouse release events for grid
@@ -96,46 +101,56 @@ end
 ---@param button number The mouse button that was pressed
 ---@return boolean Whether the input was handled
 function GridHandler:handle_grid_click(grid, x, y, button)
+  print("[DEBUG] handle_grid_click called for button " .. button .. " at (" .. x .. "," .. y .. ")") -- DEBUG
   -- Convert to local grid coordinates
   local rel_x = x - grid.x
   local rel_y = y - grid.y
   
-  -- Check if click is within grid bounds (redundant but safe)
-  if rel_x < 0 or rel_x > grid.width or 
-     rel_y < 0 or rel_y > grid.height then
-    
-    -- Clear selection if clicking outside
-    if grid.selected_cell then
-      grid.selected_cell.active = false
-      grid.selected_cell = nil
-    end
-    return false
-  end
-  
   -- Calculate cell position
   local col = math.floor(rel_x / (grid.cell_width + grid.spacing)) + 1
   local row = math.floor(rel_y / (grid.cell_height + grid.spacing)) + 1
-  
+  print("[DEBUG] Calculated row: " .. row .. ", col: " .. col) -- DEBUG
+
   -- Validate cell position
   if row < 1 or row > grid.rows or col < 1 or col > grid.cols then
+    print("[DEBUG] Calculated row/col out of bounds.") -- DEBUG
+    -- Click was within grid bounds but not on a specific cell calculation area (e.g., spacing)
+    -- Clear grid selection if clicking empty space within the grid bounds
+    if grid.selected_cell then
+        print("[DEBUG] Clearing selection because click was in grid spacing.") -- DEBUG
+        grid.selected_cell = nil
+    else
+        print("[DEBUG] Click in grid spacing, no cell selected.") -- DEBUG
+    end
     return false
   end
   
   local cell = grid:get_cell_at(row, col)
   if not cell then
+     print("[DEBUG] Cell not found via get_cell_at for row " .. row .. ", col " .. col .. ".") -- DEBUG
+     -- Should not happen if row/col are valid, but handle defensively
+     if grid.selected_cell then
+        print("[DEBUG] Clearing selection because cell lookup failed.") -- DEBUG
+        grid.selected_cell = nil
+     end
     return false
   end
   
+  print("[DEBUG] Found cell: " .. cell.id .. ". Proceeding with button logic.") -- DEBUG
+
   -- Handle right-click (transfer to inventory)
   if button == 2 then
+    print("[DEBUG] Handling right click.") -- DEBUG
     return self:handle_right_click(grid, cell)
   end
   
   -- Handle left-click (selection and combination)
   if button == 1 then
+    print("[DEBUG] Handling left click by calling handle_left_click.") -- DEBUG
     return self:handle_left_click(grid, cell)
   end
   
+  print("[DEBUG] Unhandled button: " .. button) -- DEBUG
   return false
 end
 
@@ -173,65 +188,88 @@ end
 ---@param cell table The clicked cell
 ---@return boolean Whether the input was handled
 function GridHandler:handle_left_click(grid, cell)
-  -- Get inventory reference
   local inventory = self:get_inventory()
   
-  -- If we have a selected inventory item, try to place it
+  -- Priority 1: Handle placing a selected inventory item
   if inventory and inventory.selected_slot then
-    local item = inventory:get_selected_item()
-    if item then
-      if not cell.item then  -- Only place if cell is empty
-        -- Remove from inventory and add to grid
-        item = inventory:remove_selected_item()
-        if item then
-          local success = cell:add_item(item)
-          if success then
-            -- Clear inventory selection after successful placement
-            inventory.selected_slot = nil
-            inventory.selected_item = nil
-            return true
-          else
-            -- If add failed, put item back in inventory
-            inventory:add_item(item)
+      local item_to_place = inventory:get_selected_item()
+      if item_to_place then
+          -- Only if target cell is empty
+          if not cell.item then
+              -- First remove from inventory (returns the actual item)
+              item_to_place = inventory:remove_selected_item()
+              if item_to_place then
+                  local add_success = cell:add_item(item_to_place)
+                  if add_success then
+                      -- Clear inventory selection on successful placement
+                      inventory.selected_slot = nil
+                      return true
+                  else
+                      -- Failed to add to cell, put back in inventory
+                      inventory:add_item(item_to_place)
+                  end
+              end
           end
-        end
+          
+          -- Always clear inventory selection to avoid confusing state
+          inventory.selected_slot = nil
+          return true
+      else
+          -- Invalid selection, clear it
+          inventory.selected_slot = nil
+          return true
       end
-      return false
-    end
   end
-  
-  -- If we already have a selected cell
+
+  -- Priority 2: Handle grid-to-grid interaction - clicking on a cell with no inventory selection
+
+  -- If a cell is already selected...
   if grid.selected_cell then
-    -- If clicking the same cell, deselect it
-    if grid.selected_cell == cell then
-      grid.selected_cell.active = false
+      local source_cell = grid.selected_cell
+      local target_cell = cell
+      
+      -- Clicking same cell? Deselect
+      if source_cell == target_cell then
+          grid.selected_cell = nil
+          return true
+      end
+      
+      -- Both cells have items? Try combine
+      if source_cell.item and target_cell.item then
+          local combined = self:combine_items(grid, source_cell, target_cell)
+          grid.selected_cell = nil
+          return true
+      end
+      
+      -- Source has item but target is empty? Move item
+      if source_cell.item and not target_cell.item then
+          local item = source_cell:remove_item()
+          if item then
+              local success = target_cell:add_item(item)
+              if not success then
+                  -- Move failed, put back
+                  source_cell:add_item(item)
+              end
+          end
+          grid.selected_cell = nil
+          return true
+      end
+      
+      -- Target has item but source is empty? (Shouldn't happen but handle just in case)
+      if not source_cell.item and target_cell.item then
+          grid.selected_cell = nil
+          return true
+      end
+      
+      -- Both empty? Just clear selection
       grid.selected_cell = nil
       return true
-    end
-    
-    -- Try to combine items if both cells have items
-    if cell.item and grid.selected_cell.item then
-      local success = self:combine_items(grid, grid.selected_cell, cell)
-      -- Clear selection after combination attempt
-      grid.selected_cell.active = false
-      grid.selected_cell = nil
-      return success
-    end
-    
-    -- If target cell is empty or combination failed, clear selection
-    grid.selected_cell.active = false
-    grid.selected_cell = nil
-    return false
   end
   
-  -- Select the clicked cell if it has an item
+  -- No cell selected yet - select this one if it has an item
   if cell.item then
-    if grid.selected_cell then
-      grid.selected_cell.active = false
-    end
-    grid.selected_cell = cell
-    cell.active = true
-    return true
+      grid.selected_cell = cell
+      return true
   end
   
   return false
