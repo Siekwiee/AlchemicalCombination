@@ -1,7 +1,6 @@
 local MainMenu = {}
 -- Import the Button component
 local Button = require("src.userInterface.components.button.init")
-local Debug = require("src.core.debug.init")
 -- Remove PlayState dependency to avoid circular dependency
 -- local PlayState = require("src.gamestate.play_state")
 local Renderer = require("src.renderer.init")
@@ -28,12 +27,10 @@ function MainMenu:new()
         -- Access the parent GameState and switch to play state
         if _G.STATE and _G.STATE.switch_state then
           _G.STATE:switch_state("play")
-        else
-          Debug.debug(Debug, "ERROR: Cannot switch state, _G.STATE not available")
         end
       end 
     },
-    { text = "Options", action = function() Debug.debug(Debug, "Options clicked") end },
+    { text = "Options", action = function() end },
     { text = "Exit", action = function() love.event.quit() end }
   }
   
@@ -50,11 +47,6 @@ function MainMenu:new()
       text = btn_data.text,
       on_click = btn_data.action
     })
-  end
-  
-  -- Debug log for buttons (move outside the loop)
-  for _, ui_button in ipairs(self.ui_buttons) do
-    Debug.debug(Debug, "MainMenu:ui_buttons " .. ui_button.text)
   end
   
   -- Create input manager for this state
@@ -82,8 +74,6 @@ function MainMenu:draw()
 end
 
 function MainMenu:mousepressed(x, y, button)
-  Debug.debug(Debug, "MainMenu:mousepressed " .. x .. "," .. y .. " btn:" .. button)
-  
   if button ~= 1 then return end
   
   -- Check if any button was clicked
@@ -99,7 +89,6 @@ end
 
 -- Add input handling methods to properly integrate with InputManager
 function MainMenu:keypressed(key, scancode, isrepeat)
-  Debug.debug(Debug, "MainMenu:keypressed " .. key)
   -- Your menu-specific key handling logic here
   
   -- Forward to input manager if it exists

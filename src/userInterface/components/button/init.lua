@@ -1,5 +1,4 @@
 -- Button Initialization (combination of core.lua and visualization.lua)
-local Debug = require("src.core.debug.init")
 local ButtonCore = require("src.userInterface.components.button.core")
 local ButtonViz = require("src.userInterface.components.button.visualization")
 
@@ -53,8 +52,6 @@ function Button:draw()
 end
 
 function Button:check_click(x, y, button)
-    Debug.debug(Debug, "Button:check_click for " .. self.text .. " at " .. x .. "," .. y)
-    
     if self.disabled then
         return false
     end
@@ -62,7 +59,6 @@ function Button:check_click(x, y, button)
     local is_clicked = ButtonCore.check_click(self, x, y, button)
     
     if is_clicked and self.on_click then
-        Debug.debug(Debug, "Button clicked: " .. self.text)
         self.on_click()
         return true
     end

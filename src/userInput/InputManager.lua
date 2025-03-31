@@ -1,4 +1,3 @@
-local Debug = require("src.core.debug.init")
 local InputState = require("src.userInput.state.InputState")
 local InputBindings = require("src.userInput.bindings.InputBindings")
 local DefaultBindings = require("src.userInput.bindings.DefaultBindings")
@@ -10,10 +9,9 @@ local UIHandler = require("src.userInput.handlers.UIHandler")
 local InventoryHandler = require("src.userInput.handlers.InventoryHandler")
 
 ---@class InputManager
----@field game_state GameState The current game state
----@field state InputState Current input state tracking
----@field bindings InputBindings Key and button bindings
----@field handlers table Registered input handlers
+---@field game_state GameState Reference to the game state
+---@field bindings InputBindings Keyboard and mouse bindings
+---@field handlers table<string, InputHandler> Handler instances for different input types
 local InputManager = {}
 InputManager.__index = InputManager
 
@@ -38,9 +36,6 @@ function InputManager:new(game_state)
     state = StateHandlerFactory:create_handler(game_state)
   }
   
-  -- Logging options
-  self.debug_enabled = false
-  
   return self
 end
 
@@ -62,82 +57,95 @@ end
 ---@param scancode string The scancode of the key
 ---@param isrepeat boolean Whether this is a key repeat event
 function InputManager:keypressed(key, scancode, isrepeat)
-  -- Update state
-  self.state:key_pressed(key, scancode, isrepeat)
-  
-  -- Debug output
-  self:debug("keypressed", key)
-  
-  -- Check for game control keys
-  if self:check_system_keys(key) then
-    return
-  end
-  
-  -- Forward to UI manager first (high priority)
+  -- First handle UI through UI handler
   if self.handlers.ui:handle_key_pressed(key, scancode, isrepeat) then
-    return
-  end
-  
-  -- Forward to current state handler
-  if self.handlers.state and self.handlers.state:handle_key_pressed(key, scancode, isrepeat) then
-    return
-  end
-  
-  -- Handle specific game actions via bindings
-  self:process_key_bindings(key)
-end
-
----Checks system-level key operations
----@param key string The key that was pressed
----@return boolean Whether the key was handled
-function InputManager:check_system_keys(key)
-  -- Quit game
-  if key == self.bindings:get_key("quit") then
-    love.event.quit()
     return true
   end
   
-  -- Toggle debug mode
-  if key == self.bindings:get_key("debug_toggle") then
-    self:toggle_debug()
+  -- Then handle game state specific input
+  if self.handlers.state and self.handlers.state:handle_key_pressed(key, scancode, isrepeat) then
+    return true
+  end
+  
+  -- Handle menu navigation with keyboard
+  if key == "up" or key == "down" or key == "left" or key == "right" then
+    -- Implement menu navigation logic here
+    return true
+  end
+  
+  -- Handle menu selection with enter/space
+  if key == "return" or key == "space" then
+    -- Implement menu selection logic here
     return true
   end
   
   return false
 end
 
----Process key bindings to trigger game actions
+---Process key bindings and execute corresponding actions
 ---@param key string The key that was pressed
 function InputManager:process_key_bindings(key)
-  local action = self.bindings:get_action_for_key(key)
+  -- Get the action for this key
+  local action = self.bindings:get_action(key)
   
-  if action == "inventory_toggle" then
-    if self.game_state.components and self.game_state.components.inventory then
-      self.game_state.components.inventory:toggle()
-    end
-  elseif action == "crafting_open" then
-    if self.game_state.components and self.game_state.components.crafting then
-      self.game_state.components.crafting:open_menu()
-    end
+  -- Execute the action if found
+  if action then
+    self:execute_action(action)
+    return true
   end
+  
+  return false
+end
+
+---Executes a game action
+---@param action string The action to execute
+function InputManager:execute_action(action)
+  -- Implement actions like movement, attack, etc.
+  if action == "move_up" then
+    -- Move player up
+  elseif action == "move_down" then
+    -- Move player down
+  elseif action == "move_left" then
+    -- Move player left
+  elseif action == "move_right" then
+    -- Move player right
+  elseif action == "attack" then
+    -- Attack
+  end
+end
+
+---Process system key commands
+---@param key string The key that was pressed
+---@return boolean Whether a system key was processed
+function InputManager:check_system_keys(key)
+  -- Check for system-level keys like quit, toggle fullscreen, etc.
+  if key == "escape" then
+    -- Handle escape key (menu, back, quit)
+    return true
+  elseif key == "f11" then
+    -- Toggle fullscreen
+    love.window.setFullscreen(not love.window.getFullscreen())
+    return true
+  end
+  
+  return false
 end
 
 ---Handles key release events
 ---@param key string The key that was released
 ---@param scancode string The scancode of the key
 function InputManager:keyreleased(key, scancode)
-  -- Update state
-  self.state:key_released(key, scancode)
-  
-  -- Forward to UI manager first
+  -- First handle UI through UI handler
   if self.handlers.ui:handle_key_released(key, scancode) then
-    return
+    return true
   end
   
-  -- Forward to current state handler
+  -- Then handle game state specific input
   if self.handlers.state and self.handlers.state:handle_key_released(key, scancode) then
-    return
+    return true
   end
+  
+  return false
 end
 
 ---Handles mouse press events
@@ -145,45 +153,30 @@ end
 ---@param y number Mouse Y position 
 ---@param button number Mouse button that was pressed
 function InputManager:mousepressed(x, y, button)
-  -- Update state
-  self.state:mouse_pressed(x, y, button)
-  
-  -- Debug output
-  self:debug("mousepressed", x .. "," .. y .. " btn:" .. button)
-  
-  -- Set up a handled flag to check if any handler processed the event
-  local handled = false
-  
-  -- Forward to UI manager first (high priority)
+  -- First handle UI through UI handler
   if self.handlers.ui:handle_mouse_pressed(x, y, button) then
-    self:debug("mousepressed handled by UI manager")
     return true
   end
   
-  -- Check for inventory interaction if available
-  if self.game_state and self.game_state.components and self.game_state.components.inventory then
-    local inventory = self.game_state.components.inventory
-    if inventory.visible and inventory:handle_mouse_pressed(x, y, button) then
-      self:debug("mousepressed handled by inventory")
+  -- Then handle inventory interactions
+  if self.game_state.components and self.game_state.components.inventory then
+    if self.game_state.components.inventory:handle_mouse_pressed(x, y, button) then
       return true
     end
   end
   
-  -- Forward to current state handler
+  -- Then handle game state specific input
   if self.handlers.state and self.handlers.state:handle_mouse_pressed(x, y, button) then
-    self:debug("mousepressed handled by state handler")
     return true
   end
   
-  -- Forward to grid handler
+  -- Handle grid interactions
   if self.handlers.grid:handle_mouse_pressed(x, y, button) then
-    self:debug("mousepressed handled by grid handler")
     return true
   end
   
-  -- Forward to inventory handler
+  -- Handle inventory interactions through dedicated handler
   if self.handlers.inventory:handle_mouse_pressed(x, y, button) then
-    self:debug("mousepressed handled by inventory handler")
     return true
   end
   
@@ -195,42 +188,30 @@ end
 ---@param y number Mouse Y position 
 ---@param button number Mouse button that was released
 function InputManager:mousereleased(x, y, button)
-  -- Update state
-  self.state:mouse_released(x, y, button)
-  
-  -- Debug output
-  self:debug("mousereleased", x .. "," .. y .. " btn:" .. button)
-  
-  -- Forward to UI manager first
+  -- First handle UI through UI handler
   if self.handlers.ui:handle_mouse_released(x, y, button) then
-    self:debug("mousereleased handled by UI manager")
     return true
   end
   
-  -- Check for inventory interaction if available
-  if self.game_state and self.game_state.components and self.game_state.components.inventory then
-    local inventory = self.game_state.components.inventory
-    if inventory.visible and inventory:handle_mouse_released(x, y, button) then
-      self:debug("mousereleased handled by inventory")
+  -- Then handle inventory interactions
+  if self.game_state.components and self.game_state.components.inventory then
+    if self.game_state.components.inventory:handle_mouse_released(x, y, button) then
       return true
     end
   end
   
-  -- Forward to current state handler
+  -- Then handle game state specific input
   if self.handlers.state and self.handlers.state:handle_mouse_released(x, y, button) then
-    self:debug("mousereleased handled by state handler")
     return true
   end
   
-  -- Forward to grid handler
+  -- Handle grid interactions
   if self.handlers.grid:handle_mouse_released(x, y, button) then
-    self:debug("mousereleased handled by grid handler")
     return true
   end
   
-  -- Forward to inventory handler
+  -- Handle inventory interactions through dedicated handler
   if self.handlers.inventory:handle_mouse_released(x, y, button) then
-    self:debug("mousereleased handled by inventory handler")
     return true
   end
   
@@ -243,18 +224,17 @@ end
 ---@param dx number Mouse X movement delta
 ---@param dy number Mouse Y movement delta
 function InputManager:mousemoved(x, y, dx, dy)
-  -- Update state
-  self.state:mouse_moved(x, y, dx, dy)
-  
-  -- Forward to UI manager first
+  -- First handle UI through UI handler
   if self.handlers.ui:handle_mouse_moved(x, y, dx, dy) then
-    return
+    return true
   end
   
-  -- Forward to current state handler
+  -- Then handle game state specific input
   if self.handlers.state and self.handlers.state:handle_mouse_moved(x, y, dx, dy) then
-    return
+    return true
   end
+  
+  return false
 end
 
 ---Handles mouse wheel events
@@ -280,26 +260,6 @@ end
 ---@param handler table The handler to register
 function InputManager:register_handler(name, handler)
   self.handlers[name] = handler
-end
-
----Toggles debug mode for the input manager
-function InputManager:toggle_debug()
-  self.debug_enabled = not self.debug_enabled
-  
-  -- Also toggle in game components if available
-  if self.game_state.components and self.game_state.components.debug then
-    self.game_state.components.debug:toggle()
-  end
-  
-  Debug.debug(Debug, "Input debug mode " .. (self.debug_enabled and "enabled" or "disabled"))
-end
-
----Logs a debug message if debug is enabled
----@param event string Event name
----@param data any Data to log
-function InputManager:debug(event, data)
-  if not self.debug_enabled then return end
-  Debug.debug(Debug, "InputManager:" .. event .. " - " .. tostring(data))
 end
 
 ---Sets key bindings

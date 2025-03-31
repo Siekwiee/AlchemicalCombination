@@ -1,5 +1,3 @@
-local Debug = require("src.core.debug.init")
-
 local UIManager = {}
 UIManager.__index = UIManager
 
@@ -15,8 +13,7 @@ function UIManager:new(game_state)
   self.game_state = game_state
   self.state_name = game_state.state_name
   self.elements = {}
-  -- Initialize UI elemselfents
-  Debug.debug(Debug, "UIManager:new - Creating new instance")
+  -- Initialize UI elements
   self:init_elements()
   
   return self
@@ -25,29 +22,17 @@ end
 function UIManager:init_elements()
   -- Load UI elements
   local Button = require("src.userInterface.components.button.init")
-  Debug.debug(Debug, "UIManager:init_elements - Before setting menu_buttons")
-  if self.game_state then
-    Debug.debug(Debug, "UIManager:init_elements - game_state exists")
-    if self.game_state.ui_buttons then
-      Debug.debug(Debug, "UIManager:init_elements - Found " .. #self.game_state.ui_buttons .. " buttons")
-    else
-      Debug.debug(Debug, "UIManager:init_elements - No ui_buttons in game_state")
-    end
-  else
-    Debug.debug(Debug, "UIManager:init_elements - No game_state")
-  end
+
   self.elements.menu_buttons = self.game_state.ui_buttons
   
   -- Load modular grid if it exists in game state
   if self.game_state and self.game_state.components and self.game_state.components.modular_grid then
     self.elements.modular_grid = self.game_state.components.modular_grid
-    Debug.debug(Debug, "UIManager:init_elements - Found modular grid")
   end
   
   -- Load inventory if it exists in game state
   if self.game_state and self.game_state.components and self.game_state.components.inventory then
     self.elements.inventory = self.game_state.components.inventory
-    Debug.debug(Debug, "UIManager:init_elements - Found inventory")
   end
 end
 
@@ -87,14 +72,12 @@ function UIManager:handle_mouse_pressed(x, y, button)
      self.elements.inventory.visible and 
      self.elements.inventory.handle_mouse_pressed and 
      self.elements.inventory:handle_mouse_pressed(x, y, button) then
-    Debug.debug(Debug, "UIManager:handle_mouse_pressed - Handled by inventory")
     return true
   end
   
   -- Handle modular grid if inventory didn't handle it
   if self.elements.modular_grid and self.elements.modular_grid.handle_mouse_pressed then
     if self.elements.modular_grid:handle_mouse_pressed(x, y, button) then
-      Debug.debug(Debug, "UIManager:handle_mouse_pressed - Handled by modular grid")
       return true
     end
   end
@@ -105,7 +88,6 @@ function UIManager:handle_mouse_pressed(x, y, button)
        name ~= "inventory" and 
        element.check_click and 
        element:check_click(x, y, button) then
-      Debug.debug(Debug, "UIManager:handle_mouse_pressed - Handled by element: " .. name)
       return true -- Input was handled by UI
     end
   end
@@ -117,7 +99,6 @@ function UIManager:handle_mouse_released(x, y, button)
   -- Handle modular grid first if it exists
   if self.elements.modular_grid and self.elements.modular_grid.handle_mouse_released then
     if self.elements.modular_grid:handle_mouse_released(x, y, button) then
-      Debug.debug(Debug, "UIManager:handle_mouse_released - Handled by modular grid")
       return true
     end
   end
@@ -125,7 +106,6 @@ function UIManager:handle_mouse_released(x, y, button)
   -- Handle mouse release for other UI elements
   for name, element in pairs(self.elements) do
     if name ~= "modular_grid" and element.handle_mouse_released and element:handle_mouse_released(x, y, button) then
-      Debug.debug(Debug, "UIManager:handle_mouse_released - Handled by element: " .. name)
       return true
     end
   end

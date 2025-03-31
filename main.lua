@@ -5,7 +5,6 @@ local GameState = require("src.gamestate.init")
 local MainMenu = require("src.gamestate.main_menu")
 local PlayState = require("src.gamestate.play_state")
 local SettingsState = require("src.gamestate.settings")
-local Debug = require("src.core.debug.init")
 -- Use local variables for better performance and scoping
 local state
 -- Make state available globally for menu transitions
@@ -27,7 +26,6 @@ function love.load()
   -- Ensure we're starting with the main menu state
   state:switch_state("menu")
   
-  Debug.clear_logs()
   -- Initialize random seed
   math.randomseed(os.time())
 end
@@ -53,13 +51,6 @@ function love.draw()
   -- Draw current game state
   if state and state.draw then
     state:draw()
-  end
-  
-  -- Debug overlay if enabled
-  if state and state.components and 
-     state.components.debug and
-     state.components.debug.is_enabled then
-    state.components.debug:draw()
   end
 end
 

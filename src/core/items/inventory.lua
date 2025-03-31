@@ -1,4 +1,3 @@
-local Debug = require("src.core.debug.init")
 local ItemManager = require("src.core.items.manager")
 
 local Inventory = {}
@@ -57,7 +56,6 @@ function Inventory:remove_item(slot_index)
     
     local item = self.slots[slot_index]
     if item then
-        Debug.debug(Debug, "Inventory:remove_item - Removed " .. (item.name or "unnamed") .. " from slot " .. slot_index)
         self.slots[slot_index] = nil
     end
     

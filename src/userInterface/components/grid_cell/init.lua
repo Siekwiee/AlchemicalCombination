@@ -1,6 +1,5 @@
 --This is the init file for the grid cell ui module
 
-local Debug = require("src.core.debug.init")
 local GridCell = require("src.core.grid_cell.init")
 
 local UIGridCell = {}
@@ -18,8 +17,6 @@ function UIGridCell:new(config)
   -- UI integration properties
   cell.visible = config.visible or true
   cell.enabled = config.enabled or true
-  
-  Debug.debug(Debug, "UIGridCell:new: Created grid cell UI component at " .. cell.core.x .. ", " .. cell.core.y)
   
   return cell
 end
@@ -56,7 +53,6 @@ function UIGridCell:handle_mouse_pressed(x, y, button)
   
   if self.core:contains_point(x, y) then
     self.core.active = true
-    Debug.debug(Debug, "UIGridCell:handle_mouse_pressed: Activated cell")
     
     if self.on_click then
       self.on_click(self)

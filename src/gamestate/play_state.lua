@@ -1,5 +1,4 @@
 -- Imports
-local Debug = require("src.core.debug.init")
 local love = require("love")
 local Renderer = require("src.renderer.init")
 local UIModularGrid = require("src.userInterface.components.modular_grid.init")
@@ -35,7 +34,6 @@ end
 
 function PlayState:init()
     -- Initialize components
-    self.components.debug = Debug
     self.components.item_manager = ItemManager:new()
     
     -- Initialize input manager
@@ -83,8 +81,6 @@ function PlayState:add_sample_items()
     self.components.modular_grid:add_item(1, 4, self.components.item_manager:create_item("fire"))
     self.components.modular_grid:add_item(4, 1, self.components.item_manager:create_item("earth"))
     self.components.modular_grid:add_item(4, 4, self.components.item_manager:create_item("air"))
-    
-    Debug.debug(Debug, "PlayState:add_sample_items - Added basic items to grid")
 end
 
 function PlayState:update(dt)
@@ -121,36 +117,23 @@ function PlayState:draw()
 end
 
 function PlayState:keypressed(key, scancode, isrepeat)
-    -- Debug key press
-    Debug.debug(Debug, "PlayState:keypressed - Key: " .. tostring(key))
-    
     -- Handle key press events
     if key == "g" then
         -- Toggle grid visibility
         if self.components.modular_grid then
             self.components.modular_grid:toggle()
         end
-    elseif key == "d" then
-        -- Toggle debug overlay
-        if self.components.debug then
-            self.components.debug:toggle()
-        end
     elseif key == "i" then
         -- Toggle inventory
-        Debug.debug(Debug, "PlayState:keypressed - Toggle inventory")
         if self.components.inventory then
             self.components.inventory:toggle()
-            Debug.debug(Debug, "PlayState:keypressed - Inventory visibility: " .. tostring(self.components.inventory.visible))
         end
     end
 end
 
 function PlayState:mousepressed(x, y, button)
-    Debug.debug(Debug, "PlayState:mousepressed - Button " .. button .. " at " .. x .. "," .. y)
-    
     -- Ensure we have an input manager
     if not self.input_manager then
-        Debug.debug(Debug, "PlayState:mousepressed - No input manager available")
         return false
     end
     
@@ -159,11 +142,8 @@ function PlayState:mousepressed(x, y, button)
 end
 
 function PlayState:mousereleased(x, y, button)
-    Debug.debug(Debug, "PlayState:mousereleased - Button " .. button .. " at " .. x .. "," .. y)
-    
     -- Ensure we have an input manager
     if not self.input_manager then
-        Debug.debug(Debug, "PlayState:mousereleased - No input manager available")
         return false
     end
     
@@ -173,7 +153,6 @@ end
 
 function PlayState:Switchto()
     love.graphics.clear()
-    Debug.debug(Debug, "Switching to Play State")
     
     -- Use the global state object if available
     if _G.STATE and _G.STATE.switch_state then

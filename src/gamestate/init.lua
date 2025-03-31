@@ -2,14 +2,12 @@
 local InputManager = require("src.userInput.InputManager")
 local Renderer = require("src.renderer.init")
 --TODO Add UiManager
-local Debug = require("src.core.debug.init")
 local MainMenu = require("src.gamestate.main_menu")
 
 ---@class GameState
 ---@field total_time number
 ---@field dt number
 ---@field states table<string, GameState>
----@field debug Debug
 ---@field renderer Renderer
 ---@field input_manager InputManager
 ---@field current_state GameState
@@ -35,7 +33,6 @@ function GameState:new()
   instance.states = {}
 
   -- Create game systems 
-  instance.debug = Debug
   -- Create input manager first so it can be provided to states
   instance.input_manager = InputManager:new(instance)
 
@@ -59,16 +56,12 @@ function GameState:init()
   if self.current_state and self.current_state.init then
     self.current_state:init()
   end
-
-  Debug.debug(Debug, "GameState initialized")
 end
 
 ---Switch to a different game state
 ---@param state_name string The name of the state to switch to
 ---@return boolean Whether the state switch was successful
 function GameState:switch_state(state_name)
-  Debug.debug(Debug, "Switching to state: " .. state_name)
-  
   -- Reset UI state
   if self.ui_manager then
     self.ui_manager = nil
@@ -106,7 +99,6 @@ function GameState:switch_state(state_name)
     return true
   end
   
-  Debug.debug(Debug, "Unknown state: " .. state_name)
   return false
 end
 
@@ -134,7 +126,6 @@ end
 
 function GameState:keypressed(key, scancode, isrepeat)
   -- Forward keypressed to input manager
-  Debug.debug(Debug, "GameState:keypressed - Key: " .. tostring(key))
   
   if self.input_manager then
     self.input_manager:keypressed(key, scancode, isrepeat)
@@ -147,8 +138,6 @@ function GameState:keypressed(key, scancode, isrepeat)
 end
 
 function GameState:mousepressed(x, y, button)
-  Debug.debug(Debug, "GameState:mousepressed - " .. x .. "," .. y .. " btn:" .. button)
-  
   -- Forward to input manager
   if self.input_manager then
     self.input_manager:mousepressed(x, y, button)
@@ -156,7 +145,6 @@ function GameState:mousepressed(x, y, button)
   
   -- Also forward to current state if it has a mousepressed method
   if self.current_state and self.current_state.mousepressed then
-    Debug.debug(Debug, "Forwarding mousepressed to current state")
     self.current_state:mousepressed(x, y, button)
   end
 end

@@ -1,15 +1,25 @@
-local Debug = require("src.core.debug.init")
 local Inventory = require("src.core.items.inventory")
 local love = require("love")
 
+---@class UIInventory
+---@field visible boolean Whether the inventory is visible
+---@field x number X position of the inventory
+---@field y number Y position of the inventory
+---@field width number Width of the inventory
+---@field height number Height of the inventory
+---@field slots table Table of inventory slots
+---@field selected_slot number|nil Currently selected slot or nil
+---@field max_slots number Maximum number of slots
+---@field item_manager ItemManager Reference to the item manager
+---@field toggle fun(): boolean Toggle inventory visibility
 local UIInventory = {}
 UIInventory.__index = UIInventory
 
 ---Creates a new inventory UI component
----@param config table Inventory configuration with x, y, slots, etc.
----@return table New inventory UI component
+---@param config table Configuration table
+---@return UIInventory
 function UIInventory:new(config)
-    local self = setmetatable({}, UIInventory)
+    local self = setmetatable({}, self)
     
     -- Core inventory
     self.inventory = config.inventory or Inventory:new({
@@ -18,7 +28,7 @@ function UIInventory:new(config)
     })
     
     -- UI properties
-    self.visible = config.visible or true
+    self.visible = config.visible ~= false -- Default to visible
     self.enabled = config.enabled or true
     self.x = config.x or 50
     self.y = config.y or 50
@@ -124,7 +134,7 @@ end
 ---Toggles inventory visibility
 function UIInventory:toggle()
     self.visible = not self.visible
-    Debug.debug(Debug, "UIInventory:toggle - Visibility: " .. tostring(self.visible))
+    return self.visible
 end
 
 ---Sets inventory visibility
@@ -149,14 +159,10 @@ function UIInventory:handle_mouse_pressed(x, y, button)
         return false
     end
     
-    Debug.debug(Debug, "UIInventory:handle_mouse_pressed - Check if click in inventory bounds " .. x .. "," .. y)
-    
     -- Check if click is within inventory bounds
     if x < self.x or x > self.x + self.width or y < self.y or y > self.y + self.height then
         return false
     end
-    
-    Debug.debug(Debug, "UIInventory:handle_mouse_pressed - Click is within inventory bounds")
     
     -- Find which slot was clicked
     for i = 1, self.inventory.max_slots do
@@ -175,14 +181,13 @@ function UIInventory:handle_mouse_pressed(x, y, button)
                 if self.selected_slot == i then
                     -- Deselect if clicking the same slot
                     self.selected_slot = nil
-                    Debug.debug(Debug, "UIInventory:handle_mouse_pressed - Deselected slot " .. i)
                 else
                     self.selected_slot = i
                     local item = self.inventory:get_item(i)
                     if item then
-                        Debug.debug(Debug, "UIInventory:handle_mouse_pressed - Selected slot " .. i .. " with item: " .. (item.name or "unnamed"))
+                        -- Show item details
                     else
-                        Debug.debug(Debug, "UIInventory:handle_mouse_pressed - Selected empty slot " .. i)
+                        -- Selected empty slot
                     end
                 end
                 return true
@@ -267,15 +272,13 @@ end
 ---@param item table The item to add
 ---@return boolean Whether the item was added successfully
 function UIInventory:add_item(item)
-    print("UIInventory:add_item - Attempting to add item: " .. (item.name or "unnamed"))
-    local success, slot = self.inventory:add_item(item)
-    if success then
-        print("UIInventory:add_item - Successfully added to slot " .. tostring(slot))
-        self.selected_slot = slot
-    else
-        print("UIInventory:add_item - Failed to add item")
+    -- Find first empty slot
+    local slot = self:find_empty_slot()
+    if slot then
+        self.slots[slot] = item
+        return slot
     end
-    return success
+    return nil
 end
 
 return UIInventory 

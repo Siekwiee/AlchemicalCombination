@@ -1,4 +1,3 @@
-local Debug = require("src.core.debug.init")
 local InputHandler = require("src.userInput.handlers.InputHandler")
 
 ---@class GridHandler : InputHandler
@@ -55,7 +54,6 @@ function GridHandler:handle_mouse_released(x, y, button)
   -- If we have a selected cell, return true to indicate we handled the event
   -- but DON'T clear the selection, so we can combine items later
   if grid.selected_cell then
-    self:debug("GridHandler:handle_mouse_released - Maintaining selection on cell: " .. grid.selected_cell.id)
     return true
   end
   
@@ -73,7 +71,6 @@ function GridHandler:get_active_grid()
     return self.game_state.current_state.components.modular_grid.core
   end
   
-  Debug.debug(Debug, "GridHandler:get_active_grid - No grid found in game state")
   return nil
 end
 
@@ -106,7 +103,6 @@ function GridHandler:handle_grid_click(grid, x, y, button)
   -- Check if click is within grid bounds (redundant but safe)
   if rel_x < 0 or rel_x > grid.width or 
      rel_y < 0 or rel_y > grid.height then
-    self:debug("GridHandler:handle_grid_click - Click outside grid bounds")
     
     -- Clear selection if clicking outside
     if grid.selected_cell then
@@ -122,13 +118,11 @@ function GridHandler:handle_grid_click(grid, x, y, button)
   
   -- Validate cell position
   if row < 1 or row > grid.rows or col < 1 or col > grid.cols then
-    self:debug("GridHandler:handle_grid_click - Invalid cell position")
     return false
   end
   
   local cell = grid:get_cell_at(row, col)
   if not cell then
-    self:debug("GridHandler:handle_grid_click - No cell found at position")
     return false
   end
   
@@ -154,12 +148,9 @@ function GridHandler:handle_right_click(grid, cell)
     return false
   end
   
-  self:debug("GridHandler:handle_right_click - Right click on item: " .. (cell.item.name or "unnamed"))
-  
   -- Get reference to inventory from game state
   local inventory = self:get_inventory()
   if not inventory then
-    self:debug("GridHandler:handle_right_click - No inventory found")
     return false
   end
   
@@ -170,12 +161,10 @@ function GridHandler:handle_right_click(grid, cell)
   -- Try to add to inventory
   local success = inventory:add_item(item)
   if success then
-    self:debug("GridHandler:handle_right_click - Successfully transferred item to inventory")
     return true
   else
     -- Put item back if transfer failed
     cell.item = item
-    self:debug("GridHandler:handle_right_click - Failed to transfer item to inventory")
     return false
   end
 end
@@ -193,7 +182,6 @@ function GridHandler:handle_left_click(grid, cell)
       -- Remove from inventory and add to grid
       item = inventory:remove_selected_item()
       cell.item = item
-      self:debug("GridHandler:handle_left_click - Placed inventory item in grid")
       return true
     end
     return false
@@ -205,16 +193,16 @@ function GridHandler:handle_left_click(grid, cell)
     if grid.selected_cell == cell then
       grid.selected_cell.active = false
       grid.selected_cell = nil
-      self:debug("GridHandler:handle_left_click - Deselected cell")
       return true
     end
     
     -- Try to combine items
     if cell.item then
       local success = self:combine_items(grid, grid.selected_cell, cell)
-      grid.selected_cell.active = false
-      grid.selected_cell = nil
-      self:debug("GridHandler:handle_left_click - Combination " .. (success and "succeeded" or "failed"))
+      if grid.selected_cell then  -- Add check in case selected_cell becomes nil
+        grid.selected_cell.active = false
+        grid.selected_cell = nil
+      end
       return success
     end
   end
@@ -226,7 +214,6 @@ function GridHandler:handle_left_click(grid, cell)
     end
     grid.selected_cell = cell
     cell.active = true
-    self:debug("GridHandler:handle_left_click - Selected cell with item: " .. (cell.item.name or "unnamed"))
     return true
   end
   
@@ -255,16 +242,9 @@ end
 ---@param target_cell table The target cell (just clicked)
 ---@return boolean Whether the combination was successful
 function GridHandler:combine_items(grid, source_cell, target_cell)
-  self:debug("READY TO COMBINE: " .. source_cell.id .. " + " .. target_cell.id)
-  
   -- Log the items
-  self:debug("COMBINING cells: " .. source_cell.id .. " + " .. target_cell.id)
-  self:debug("Items: " .. (source_cell.item and source_cell.item.name or "nil") .. " + "
-         .. (target_cell.item and target_cell.item.name or "nil"))
-  
   -- Check if source cell has an item
   if not source_cell.item then
-    self:debug("ERROR: Source cell has no item!")
     source_cell.active = false
     grid.selected_cell = nil
     return false
@@ -272,7 +252,6 @@ function GridHandler:combine_items(grid, source_cell, target_cell)
   
   -- Check if target cell has an item
   if not target_cell.item then
-    self:debug("ERROR: Target cell has no item!")
     return false
   end
   
@@ -283,8 +262,7 @@ function GridHandler:combine_items(grid, source_cell, target_cell)
   if grid.item_manager and grid.item_manager.combine then
     combination_result = grid.item_manager:combine(source_cell.item, target_cell.item)
   else
-    self:debug("ERROR: Item manager missing combine method!")
-    combination_result = nil
+    return false
   end
   
   -- Emergency fallback if item manager failed to combine
@@ -294,31 +272,18 @@ function GridHandler:combine_items(grid, source_cell, target_cell)
   
   -- Check if we have a valid result
   if combination_result then
-    self:debug("COMBINATION SUCCESSFUL! Created: " .. (combination_result.name or "unnamed"))
-    
     -- Apply the combination result
-    self:debug("Removing item from source cell " .. source_cell.id)
     source_cell:remove_item()
     
-    self:debug("Setting result in target cell " .. target_cell.id)
     target_cell:remove_item()
     target_cell:add_item(combination_result)
     
-    self:debug("COMBINATION COMPLETE!")
+    return true
   else
-    self:debug("Combination FAILED - no recipe found")
     source_cell.active = false
     grid.selected_cell = nil
     return false
   end
-  
-  -- Clear selection
-  source_cell.active = false
-  grid.selected_cell = nil
-  
-  self:debug("----- END GRID CLICK EVENT -----")
-  
-  return true
 end
 
 ---Provides fallback combinations when the standard item manager fails
@@ -326,8 +291,6 @@ end
 ---@param target_id string Target item ID
 ---@return table|nil The combination result or nil if no fallback found
 function GridHandler:handle_emergency_combination(source_id, target_id)
-  self:debug("Trying emergency fallback combination for " .. source_id .. " + " .. target_id)
-  
   -- Some hardcoded basic combinations (water + fire = steam, etc.)
   local basic_combinations = {
     ["fire+water"] = {id = "steam", name = "Steam", color = {0.9, 0.9, 0.9}},
@@ -343,11 +306,9 @@ function GridHandler:handle_emergency_combination(source_id, target_id)
   local result = basic_combinations[key1] or basic_combinations[key2]
   
   if result then
-    self:debug("EMERGENCY: Found hardcoded combination: " .. result.name)
     return result
   end
   
-  self:debug("No hardcoded combination found")
   return nil
 end
 

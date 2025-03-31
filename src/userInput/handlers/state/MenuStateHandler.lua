@@ -1,4 +1,3 @@
-local Debug = require("src.core.debug.init")
 local InputHandler = require("src.userInput.handlers.InputHandler")
 
 ---@class MenuStateHandler : InputHandler

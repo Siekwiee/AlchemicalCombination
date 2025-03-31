@@ -1,4 +1,3 @@
-local Debug = require("src.core.debug.init")
 local InputHandler = require("src.userInput.handlers.InputHandler")
 
 ---@class InventoryHandler : InputHandler
@@ -179,27 +178,32 @@ end
 ---@param item table|nil Item in the slot, or nil if empty
 ---@return boolean Whether the input was handled
 function InventoryHandler:handle_inventory_left_click(inventory, slot_index, item)
-  -- If there's no item, can't do anything
+  -- Remove debug statement for empty slot click
   if not item then
-    -- Deselect current selection if any
-    if inventory.selected_slot then
-      inventory.selected_slot = nil
-      self:debug("InventoryHandler - Deselected inventory slot (empty slot clicked)")
-      return true
-    end
-    return false
+    self:deselect_slot()
+    return
   end
   
-  -- If this slot is already selected, deselect it
-  if inventory.selected_slot == slot_index then
-    inventory.selected_slot = nil
-    self:debug("InventoryHandler - Deselected inventory slot: " .. slot_index)
-    return true
+  -- Remove debug statement for deselecting slot
+  if slot_index == self.selected_slot then
+    self:deselect_slot()
+    return
   end
   
-  -- Select this slot
-  inventory.selected_slot = slot_index
-  self:debug("InventoryHandler - Selected inventory slot: " .. slot_index .. " with item: " .. (item.name or "unnamed"))
+  -- Remove debug statement for selecting slot
+  self.selected_slot = slot_index
+  self.selected_item = item
+
+  -- Remove debug statement for using item
+  if item.use then
+    item:use(self.game_state)
+  end
+
+  -- Remove debug statement for showing item info
+  if item.show_info then
+    item:show_info()
+  end
+  
   return true
 end
 
@@ -218,8 +222,6 @@ function InventoryHandler:handle_inventory_right_click(inventory, slot_index, it
   if item.use then
     local success = item:use(self.game_state)
     if success then
-      self:debug("InventoryHandler - Used item: " .. (item.name or "unnamed"))
-      
       -- Remove item if it was consumed
       if item.consumed then
         inventory:remove_item_at(slot_index)
@@ -232,7 +234,6 @@ function InventoryHandler:handle_inventory_right_click(inventory, slot_index, it
   -- Show item info (if applicable)
   if inventory.show_item_info then
     inventory:show_item_info(item)
-    self:debug("InventoryHandler - Showing info for item: " .. (item.name or "unnamed"))
     return true
   end
   

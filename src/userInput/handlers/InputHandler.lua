@@ -1,7 +1,5 @@
-local Debug = require("src.core.debug.init")
-
 ---@class InputHandler
----@field game_state GameState Game state reference
+---@field game_state GameState The game state reference
 local InputHandler = {}
 InputHandler.__index = InputHandler
 
@@ -9,7 +7,7 @@ InputHandler.__index = InputHandler
 ---@param game_state GameState Game state reference
 ---@return InputHandler
 function InputHandler:new(game_state)
-  local self = setmetatable({}, self)
+  local self = setmetatable({}, { __index = self })
   self.game_state = game_state
   return self
 end
@@ -54,8 +52,8 @@ end
 ---Handles mouse move events
 ---@param x number Mouse X position
 ---@param y number Mouse Y position
----@param dx number Mouse X movement delta
----@param dy number Mouse Y movement delta
+---@param dx number Change in X position
+---@param dy number Change in Y position
 ---@return boolean Whether the input was handled
 function InputHandler:handle_mouse_moved(x, y, dx, dy)
   return false
@@ -72,12 +70,6 @@ end
 ---Updates the handler state
 ---@param dt number Delta time
 function InputHandler:update(dt)
-end
-
----Helper method to log debug information
----@param message string Message to log
-function InputHandler:debug(message)
-  Debug.debug(Debug, message)
 end
 
 return InputHandler 

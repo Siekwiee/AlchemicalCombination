@@ -1,4 +1,3 @@
-local Debug = require("src.core.debug.init")
 local GridCell = require("src.core.grid_cell.init")
 local love = require("love")
 local ItemManager = require("src.core.items.manager")
@@ -51,8 +50,6 @@ function ModularGridCore.new(config)
       })
     end
   end
-  
-  Debug.debug(Debug, "ModularGridCore.new: Created grid with " .. grid.rows * grid.cols .. " cells")
   
   return grid
 end
@@ -119,7 +116,6 @@ function ModularGridCore.add_item(grid, row, col, item)
   local cell = ModularGridCore.get_cell_at(grid, row, col)
   
   if not cell then
-    Debug.debug(Debug, "ModularGridCore.add_item: Invalid cell position")
     return false
   end
   
@@ -127,7 +123,6 @@ function ModularGridCore.add_item(grid, row, col, item)
   if type(item) == "string" then
     item = grid.item_manager:create_item(item)
     if not item then
-      Debug.debug(Debug, "ModularGridCore.add_item: Failed to create item from ID: " .. tostring(item))
       return false
     end
   end
@@ -144,18 +139,15 @@ function ModularGridCore.remove_item(grid, row, col)
   local cell = ModularGridCore.get_cell_at(grid, row, col)
   
   if not cell then
-    Debug.debug(Debug, "ModularGridCore.remove_item: Invalid cell position")
     return nil
   end
   
   if not cell.item then
-    Debug.debug(Debug, "ModularGridCore.remove_item: Cell has no item")
     return nil
   end
   
   local item = cell.item
   cell.item = nil
-  Debug.debug(Debug, "ModularGridCore.remove_item: Removed item " .. (item.name or "unnamed"))
   return item
 end
 
@@ -166,7 +158,6 @@ end
 ---@return boolean Whether the combination was successful
 function ModularGridCore.combine_items(grid, source_cell, target_cell)
   if not source_cell or not target_cell then
-    Debug.debug(Debug, "ModularGridCore.combine_items: Invalid cells")
     return false
   end
   
@@ -174,7 +165,6 @@ function ModularGridCore.combine_items(grid, source_cell, target_cell)
   local target_item = target_cell.item
   
   if not source_item or not target_item then
-    Debug.debug(Debug, "ModularGridCore.combine_items: Missing items")
     return false
   end
   
@@ -189,7 +179,6 @@ function ModularGridCore.combine_items(grid, source_cell, target_cell)
     return true
   end
   
-  Debug.debug(Debug, "ModularGridCore.combine_items: No valid combination found")
   return false
 end
 
@@ -203,20 +192,16 @@ end
 function ModularGridCore.handle_mouse_pressed(grid, x, y, button, input_manager)
     -- Require input manager
     if not input_manager then
-        Debug.debug(Debug, "ERROR: ModularGridCore.handle_mouse_pressed - No input manager provided")
         return false
     end
     
     -- Check if using new or old input manager API
     if input_manager.handlers and input_manager.handlers.grid then
-        Debug.debug(Debug, "ModularGridCore - Using new InputManager API")
         return input_manager.handlers.grid:handle_mouse_pressed(x, y, button)
     elseif input_manager.handle_grid_click then
         -- Fallback to legacy method for backward compatibility
-        Debug.debug(Debug, "ModularGridCore - Using legacy InputManager API")
         return input_manager:handle_grid_click(grid, x, y, button)
     else
-        Debug.debug(Debug, "ERROR: ModularGridCore.handle_mouse_pressed - InputManager has no grid handler")
         return false
     end
 end
@@ -231,7 +216,6 @@ function ModularGridCore.handle_mouse_released(grid, x, y, button)
     -- Don't clear selections on mouse release anymore
     -- Just indicate we've handled the event if there's a selected cell
     if grid.selected_cell then
-        Debug.debug(Debug, "ModularGridCore.handle_mouse_released - Maintaining selection on cell: " .. grid.selected_cell.id)
         return true
     end
     

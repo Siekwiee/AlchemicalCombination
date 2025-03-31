@@ -1,5 +1,4 @@
 local love = require("love")
-local Debug = require("src.core.debug.init")
 
 local GridCellVisualization = {}
 

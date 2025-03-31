@@ -1,5 +1,3 @@
-local Debug = require("src.core.debug.init")
-
 ---@class InputActions
 ---@field actions table<string, function> Registered actions that can be triggered by input
 ---@field default_state table Default state for action parameters
@@ -41,7 +39,6 @@ function InputActions:trigger(action_name, params)
   local action = self.actions[action_name]
   
   if not action then
-    Debug.debug(Debug, "InputActions - Unknown action: " .. tostring(action_name))
     return false
   end
   
@@ -64,7 +61,6 @@ function InputActions:trigger(action_name, params)
   local success, result = pcall(action, combined_params)
   
   if not success then
-    Debug.debug(Debug, "InputActions - Error executing action " .. action_name .. ": " .. tostring(result))
     return false
   end
   

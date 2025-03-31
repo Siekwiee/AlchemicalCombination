@@ -1,10 +1,25 @@
-local Debug = require("src.core.debug.init")
-
+---@class GridCellCore
+---@field x number
+---@field y number
+---@field width number
+---@field height number
+---@field id string
+---@field row number
+---@field col number
+---@field item table|nil
+---@field hover boolean
+---@field active boolean
+---@field contains_point fun(self: GridCellCore, x: number, y: number): boolean
+---@field add_item fun(self: GridCellCore, item: table): boolean
+---@field remove_item fun(self: GridCellCore): table|nil
+---@field has_item fun(self: GridCellCore): boolean
+---@field update fun(self: GridCellCore, x: number, y: number)
 local GridCellCore = {}
+GridCellCore.__index = GridCellCore
 
----Creates a new grid cell
----@param config table Configuration table with x, y, width, height, and optional item
----@return table New grid cell instance
+---Create a new grid cell
+---@param config table Configuration for the grid cell
+---@return GridCellCore
 function GridCellCore.new(config)
   local cell = setmetatable({}, {__index = GridCellCore})
   
@@ -13,103 +28,88 @@ function GridCellCore.new(config)
   cell.y = config.y or 0
   cell.width = config.width or 64
   cell.height = config.height or 64
+  cell.id = config.id or (config.row or 0) .. "," .. (config.col or 0)
+  cell.row = config.row or 0
+  cell.col = config.col or 0
   
   -- Optional properties
   cell.item = config.item or nil
   cell.hover = false
   cell.active = false
-  cell.id = config.id or "cell_" .. tostring(cell.x) .. "_" .. tostring(cell.y)
-  
-  Debug.debug(Debug, "GridCellCore.new: Created grid cell at " .. cell.x .. ", " .. cell.y)
   
   return cell
 end
 
----Updates the grid cell state
----@param cell table The grid cell to update
----@param mx number Mouse x position
----@param my number Mouse y position
----@return boolean Whether the mouse is hovering over this cell
-function GridCellCore.update(cell, mx, my)
-  -- Validate input
-  if not mx or not my then
-    Debug.debug(Debug, "GridCellCore.update: Invalid mouse position")
-    cell.hover = false
-    return false
+---Update the cell's state
+---@param x number Mouse x position
+---@param y number Mouse y position
+function GridCellCore:update(x, y)
+  -- Skip if no mouse position
+  if not x or not y then
+    return
   end
   
-  -- Update hover state
-  local contains = GridCellCore.contains_point(cell, mx, my)
-  cell.hover = contains
+  -- Check if mouse is inside cell
+  self.hover = self:contains_point(x, y)
   
-  -- Log if hover state changed
-  if contains then
-    Debug.debug(Debug, "GridCellCore.update: Mouse hovering over cell " .. cell.id)
+  if self.hover then
+    -- Cell is being hovered over
   end
-  
-  return contains
 end
 
----Checks if a point is inside this grid cell
----@param cell table The grid cell to check
+---Check if a point is inside the cell
 ---@param x number X coordinate to check
 ---@param y number Y coordinate to check
 ---@return boolean Whether the point is inside the cell
-function GridCellCore.contains_point(cell, x, y)
+function GridCellCore:contains_point(x, y)
+  -- Validate input
   if not x or not y then
-    Debug.debug(Debug, "GridCellCore.contains_point: Invalid coordinates")
     return false
   end
   
-  local result = x >= cell.x and x < cell.x + cell.width and
-                 y >= cell.y and y < cell.y + cell.height
-  
-  if result then
-    Debug.debug(Debug, string.format("GridCellCore.contains_point: Point (%d,%d) is inside cell at (%d,%d)", 
-      x, y, cell.x, cell.y))
+  -- Simple rectangle collision detection
+  if x >= self.x and x <= self.x + self.width and
+     y >= self.y and y <= self.y + self.height then
+    return true
   end
   
-  return result
+  return false
 end
 
----Adds an item to the grid cell
----@param cell table The grid cell to add an item to
+---Add an item to the cell
 ---@param item table The item to add
 ---@return boolean Whether the item was successfully added
-function GridCellCore.add_item(cell, item)
-  if cell.item then
-    Debug.debug(Debug, "GridCellCore.add_item: Cell already contains an item")
+function GridCellCore:add_item(item)
+  -- Check if cell already has an item
+  if self.item then
     return false
   end
   
-  cell.item = item
-  Debug.debug(Debug, string.format("GridCellCore.add_item: Added item %s to cell at (%d,%d)", 
-    item.name or "unknown", cell.x, cell.y))
+  -- Add the item
+  self.item = item
+  
   return true
 end
 
----Removes the item from the grid cell
----@param cell table The grid cell to remove the item from
+---Remove the item from the cell
 ---@return table|nil The removed item, or nil if there was no item
-function GridCellCore.remove_item(cell)
-  local item = cell.item
-  cell.item = nil
-  
-  if item then
-    Debug.debug(Debug, string.format("GridCellCore.remove_item: Removed item %s from cell at (%d,%d)", 
-      item.name or "unknown", cell.x, cell.y))
-  else
-    Debug.debug(Debug, "GridCellCore.remove_item: No item to remove")
+function GridCellCore:remove_item()
+  -- Check if cell has an item
+  if not self.item then
+    return nil
   end
+  
+  -- Remove and return the item
+  local item = self.item
+  self.item = nil
   
   return item
 end
 
----Checks if the grid cell has an item
----@param cell table The grid cell to check
+---Check if the cell has an item
 ---@return boolean Whether the cell has an item
-function GridCellCore.has_item(cell)
-  return cell.item ~= nil
+function GridCellCore:has_item()
+  return self.item ~= nil
 end
 
 return GridCellCore 

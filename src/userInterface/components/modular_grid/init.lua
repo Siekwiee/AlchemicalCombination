@@ -1,6 +1,5 @@
 --This is the init file for the modular grid ui module
 
-local Debug = require("src.core.debug.init")
 local ModularGridCore = require("src.core.modular_grid.core")
 local ModularGrid = require("src.core.modular_grid.init")
 local ModularGridVisualization = require("src.core.modular_grid.visualization")
@@ -96,7 +95,9 @@ function UIModularGrid:handle_mouse_pressed(x, y, button)
     return false
   end
   
-  Debug.debug(Debug, "UIModularGrid:handle_mouse_pressed - Button " .. button .. " at " .. x .. "," .. y)
+  if not self:is_point_inside(x, y) then
+    return false
+  end
   
   -- Forward to the core grid, passing the input manager
   return self.core:handle_mouse_pressed(x, y, button, self.input_manager)

@@ -1,5 +1,3 @@
-local Debug = require("src.core.debug.init")
-
 local ItemLoader = {}
 
 -- Storage for items and combinations
@@ -84,8 +82,6 @@ function ItemLoader.initialize()
       description = "Molten rock"
     }
   }
-  
-  Debug.debug(Debug, "ItemLoader: Initialized with " .. #items_data .. " items and " .. #combinations_data .. " combinations")
 end
 
 ---Load all item data
@@ -107,7 +103,6 @@ end
 ---@return boolean Success or failure
 function ItemLoader.add_item(item)
   if not item or not item.id then
-    Debug.debug(Debug, "ItemLoader.add_item: Invalid item data")
     return false
   end
   
@@ -117,7 +112,6 @@ function ItemLoader.add_item(item)
   -- Add to items data
   items_data[item.id] = item
   
-  Debug.debug(Debug, "ItemLoader.add_item: Added item " .. item.id)
   return true
 end
 
@@ -128,7 +122,6 @@ end
 ---@return boolean Success or failure
 function ItemLoader.add_combination(item1_id, item2_id, result)
   if not item1_id or not item2_id or not result then
-    Debug.debug(Debug, "ItemLoader.add_combination: Invalid combination data")
     return false
   end
   
@@ -143,7 +136,6 @@ function ItemLoader.add_combination(item1_id, item2_id, result)
   -- Add to combinations data
   combinations_data[key] = result
   
-  Debug.debug(Debug, "ItemLoader.add_combination: Added combination " .. key .. " -> " .. result.id)
   return true
 end
 

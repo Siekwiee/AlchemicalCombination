@@ -1,4 +1,3 @@
-local Debug = require("src.core.debug.init")
 local InputHandler = require("src.userInput.handlers.InputHandler")
 
 ---@class UIHandler : InputHandler
@@ -25,7 +24,6 @@ function UIHandler:handle_key_pressed(key, scancode, isrepeat)
   if ui_manager and ui_manager.handle_key_pressed then
     local handled = ui_manager:handle_key_pressed(key, scancode, isrepeat)
     if handled then
-      self:debug("UIHandler - UI manager handled key press: " .. key)
       return true
     end
   end
@@ -43,7 +41,6 @@ function UIHandler:handle_key_released(key, scancode)
   if ui_manager and ui_manager.handle_key_released then
     local handled = ui_manager:handle_key_released(key, scancode)
     if handled then
-      self:debug("UIHandler - UI manager handled key release: " .. key)
       return true
     end
   end
@@ -62,7 +59,6 @@ function UIHandler:handle_mouse_pressed(x, y, button)
   if ui_manager and ui_manager.handle_mouse_pressed then
     local handled = ui_manager:handle_mouse_pressed(x, y, button)
     if handled then
-      self:debug("UIHandler - UI manager handled mouse press at " .. x .. "," .. y)
       return true
     end
   end
@@ -81,7 +77,6 @@ function UIHandler:handle_mouse_released(x, y, button)
   if ui_manager and ui_manager.handle_mouse_released then
     local handled = ui_manager:handle_mouse_released(x, y, button)
     if handled then
-      self:debug("UIHandler - UI manager handled mouse release at " .. x .. "," .. y)
       return true
     end
   end
