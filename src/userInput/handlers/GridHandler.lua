@@ -154,19 +154,18 @@ function GridHandler:handle_right_click(grid, cell)
     return false
   end
   
-  -- Store item reference and remove from cell
+  -- Store item reference
   local item = cell.item
-  cell.item = nil
   
-  -- Try to add to inventory
+  -- Try to add to inventory first
   local success = inventory:add_item(item)
   if success then
+    -- Only remove from cell if successfully added to inventory
+    cell:remove_item()
     return true
-  else
-    -- Put item back if transfer failed
-    cell.item = item
-    return false
   end
+  
+  return false
 end
 
 ---Handles left-click actions on grid cells (selection and combination)
@@ -174,17 +173,31 @@ end
 ---@param cell table The clicked cell
 ---@return boolean Whether the input was handled
 function GridHandler:handle_left_click(grid, cell)
-  -- If we have a selected inventory item, try to place it
+  -- Get inventory reference
   local inventory = self:get_inventory()
+  
+  -- If we have a selected inventory item, try to place it
   if inventory and inventory.selected_slot then
     local item = inventory:get_selected_item()
     if item then
-      -- Remove from inventory and add to grid
-      item = inventory:remove_selected_item()
-      cell.item = item
-      return true
+      if not cell.item then  -- Only place if cell is empty
+        -- Remove from inventory and add to grid
+        item = inventory:remove_selected_item()
+        if item then
+          local success = cell:add_item(item)
+          if success then
+            -- Clear inventory selection after successful placement
+            inventory.selected_slot = nil
+            inventory.selected_item = nil
+            return true
+          else
+            -- If add failed, put item back in inventory
+            inventory:add_item(item)
+          end
+        end
+      end
+      return false
     end
-    return false
   end
   
   -- If we already have a selected cell
@@ -196,15 +209,19 @@ function GridHandler:handle_left_click(grid, cell)
       return true
     end
     
-    -- Try to combine items
-    if cell.item then
+    -- Try to combine items if both cells have items
+    if cell.item and grid.selected_cell.item then
       local success = self:combine_items(grid, grid.selected_cell, cell)
-      if grid.selected_cell then  -- Add check in case selected_cell becomes nil
-        grid.selected_cell.active = false
-        grid.selected_cell = nil
-      end
+      -- Clear selection after combination attempt
+      grid.selected_cell.active = false
+      grid.selected_cell = nil
       return success
     end
+    
+    -- If target cell is empty or combination failed, clear selection
+    grid.selected_cell.active = false
+    grid.selected_cell = nil
+    return false
   end
   
   -- Select the clicked cell if it has an item
@@ -223,17 +240,24 @@ end
 ---Gets the inventory component from the game state
 ---@return table|nil The inventory UI component or nil if not found
 function GridHandler:get_inventory()
-  local inventory = nil
-  
-  -- Try to find inventory in different possible locations in the game state
+  -- First try to get inventory from components
   if self.game_state.components and self.game_state.components.inventory then
-    inventory = self.game_state.components.inventory
-  elseif self.game_state.current_state and self.game_state.current_state.components and 
-         self.game_state.current_state.components.inventory then
-    inventory = self.game_state.current_state.components.inventory
+    return self.game_state.components.inventory
   end
   
-  return inventory
+  -- Then try current state components
+  if self.game_state.current_state and 
+     self.game_state.current_state.components and 
+     self.game_state.current_state.components.inventory then
+    return self.game_state.current_state.components.inventory
+  end
+  
+  -- Finally try inventory system
+  if self.game_state.inventory_system then
+    return self.game_state.inventory_system
+  end
+  
+  return nil
 end
 
 ---Handles combining items in the grid
@@ -242,48 +266,33 @@ end
 ---@param target_cell table The target cell (just clicked)
 ---@return boolean Whether the combination was successful
 function GridHandler:combine_items(grid, source_cell, target_cell)
-  -- Log the items
-  -- Check if source cell has an item
-  if not source_cell.item then
-    source_cell.active = false
-    grid.selected_cell = nil
+  -- Validate cells and items
+  if not source_cell or not target_cell then
     return false
   end
   
-  -- Check if target cell has an item
-  if not target_cell.item then
+  if not source_cell.item or not target_cell.item then
     return false
   end
   
   -- Try to combine using item manager
   local combination_result
-  
-  -- Check for combine method
   if grid.item_manager and grid.item_manager.combine then
     combination_result = grid.item_manager:combine(source_cell.item, target_cell.item)
-  else
-    return false
-  end
-  
-  -- Emergency fallback if item manager failed to combine
-  if not combination_result then
-    combination_result = self:handle_emergency_combination(source_cell.item.id, target_cell.item.id)
   end
   
   -- Check if we have a valid result
   if combination_result then
-    -- Apply the combination result
+    -- Remove items from both cells
     source_cell:remove_item()
-    
     target_cell:remove_item()
-    target_cell:add_item(combination_result)
     
+    -- Add the result to the target cell
+    target_cell:add_item(combination_result)
     return true
-  else
-    source_cell.active = false
-    grid.selected_cell = nil
-    return false
   end
+  
+  return false
 end
 
 ---Provides fallback combinations when the standard item manager fails

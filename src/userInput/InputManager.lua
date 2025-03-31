@@ -158,25 +158,18 @@ function InputManager:mousepressed(x, y, button)
     return true
   end
   
-  -- Then handle inventory interactions
-  if self.game_state.components and self.game_state.components.inventory then
-    if self.game_state.components.inventory:handle_mouse_pressed(x, y, button) then
-      return true
-    end
-  end
-  
-  -- Then handle game state specific input
-  if self.handlers.state and self.handlers.state:handle_mouse_pressed(x, y, button) then
+  -- Then handle inventory interactions through dedicated handler
+  if self.handlers.inventory:handle_mouse_pressed(x, y, button) then
     return true
   end
   
-  -- Handle grid interactions
+  -- Then handle grid interactions through dedicated handler
   if self.handlers.grid:handle_mouse_pressed(x, y, button) then
     return true
   end
   
-  -- Handle inventory interactions through dedicated handler
-  if self.handlers.inventory:handle_mouse_pressed(x, y, button) then
+  -- Finally handle game state specific input
+  if self.handlers.state and self.handlers.state:handle_mouse_pressed(x, y, button) then
     return true
   end
   
@@ -193,25 +186,18 @@ function InputManager:mousereleased(x, y, button)
     return true
   end
   
-  -- Then handle inventory interactions
-  if self.game_state.components and self.game_state.components.inventory then
-    if self.game_state.components.inventory:handle_mouse_released(x, y, button) then
-      return true
-    end
-  end
-  
-  -- Then handle game state specific input
-  if self.handlers.state and self.handlers.state:handle_mouse_released(x, y, button) then
+  -- Then handle inventory interactions through dedicated handler
+  if self.handlers.inventory:handle_mouse_released(x, y, button) then
     return true
   end
   
-  -- Handle grid interactions
+  -- Then handle grid interactions through dedicated handler
   if self.handlers.grid:handle_mouse_released(x, y, button) then
     return true
   end
   
-  -- Handle inventory interactions through dedicated handler
-  if self.handlers.inventory:handle_mouse_released(x, y, button) then
+  -- Finally handle game state specific input
+  if self.handlers.state and self.handlers.state:handle_mouse_released(x, y, button) then
     return true
   end
   

@@ -101,7 +101,7 @@ function InventoryHandler:handle_inventory_click(inventory, x, y, button)
   end
   
   -- Check if the slot has an item
-  local item = inventory:get_item_at(slot_index)
+  local item = inventory.inventory:get_item(slot_index)
   
   -- Left click (select/use item)
   if button == 1 then
@@ -123,7 +123,13 @@ end
 ---@param button number The mouse button that was released
 ---@return boolean Whether the input was handled
 function InventoryHandler:handle_inventory_release(inventory, x, y, button)
-  -- We could implement drag-and-drop logic here
+  -- Clear selection if releasing outside inventory
+  if not self:is_point_in_inventory(inventory, x, y) then
+    inventory.selected_slot = nil
+    inventory.selected_item = nil
+    return true
+  end
+  
   return false
 end
 
@@ -133,11 +139,11 @@ end
 ---@param y number Mouse Y position
 ---@return number|nil The slot index or nil if not on a slot
 function InventoryHandler:get_slot_at_position(inventory, x, y)
-  -- Calculate local coordinates
+  -- Convert to local coordinates
   local rel_x = x - inventory.x
   local rel_y = y - inventory.y
   
-  -- Account for any header/title area
+  -- Account for header/padding
   local content_y = inventory.padding or 0
   if inventory.header_height then
     content_y = content_y + inventory.header_height
@@ -148,24 +154,25 @@ function InventoryHandler:get_slot_at_position(inventory, x, y)
     return nil
   end
   
-  -- Calculate slot position
-  local slot_size = inventory.slot_size or 40
-  local slot_padding = inventory.slot_padding or 5
-  local slots_per_row = inventory.slots_per_row or 5
+  -- Calculate slot position using the correct properties
+  local slot_width = inventory.slot_width or 60
+  local slot_height = inventory.slot_height or 60
+  local spacing = inventory.spacing or 10
+  local cols = inventory.cols or 5
   
-  local slot_area_x = math.floor(rel_x / (slot_size + slot_padding))
-  local slot_area_y = math.floor((rel_y - content_y) / (slot_size + slot_padding))
+  local slot_area_x = math.floor(rel_x / (slot_width + spacing))
+  local slot_area_y = math.floor((rel_y - content_y) / (slot_height + spacing))
   
   -- Check if within valid slot range
-  if slot_area_x < 0 or slot_area_x >= slots_per_row then
+  if slot_area_x < 0 or slot_area_x >= cols then
     return nil
   end
   
   -- Calculate slot index
-  local slot_index = slot_area_y * slots_per_row + slot_area_x + 1
+  local slot_index = slot_area_y * cols + slot_area_x + 1
   
   -- Validate slot index
-  if slot_index <= 0 or slot_index > inventory.max_slots then
+  if slot_index <= 0 or slot_index > inventory.inventory.max_slots then
     return nil
   end
   
@@ -178,32 +185,23 @@ end
 ---@param item table|nil Item in the slot, or nil if empty
 ---@return boolean Whether the input was handled
 function InventoryHandler:handle_inventory_left_click(inventory, slot_index, item)
-  -- Remove debug statement for empty slot click
-  if not item then
-    self:deselect_slot()
-    return
+  -- If clicking currently selected slot, deselect it
+  if slot_index == inventory.selected_slot then
+    inventory.selected_slot = nil
+    inventory.selected_item = nil
+    return true
   end
   
-  -- Remove debug statement for deselecting slot
-  if slot_index == self.selected_slot then
-    self:deselect_slot()
-    return
+  -- If there's an item in the slot, select it
+  if item then
+    inventory.selected_slot = slot_index
+    inventory.selected_item = item
+    return true
   end
   
-  -- Remove debug statement for selecting slot
-  self.selected_slot = slot_index
-  self.selected_item = item
-
-  -- Remove debug statement for using item
-  if item.use then
-    item:use(self.game_state)
-  end
-
-  -- Remove debug statement for showing item info
-  if item.show_info then
-    item:show_info()
-  end
-  
+  -- Clear selection if clicking empty slot
+  inventory.selected_slot = nil
+  inventory.selected_item = nil
   return true
 end
 
@@ -213,25 +211,12 @@ end
 ---@param item table|nil Item in the slot, or nil if empty
 ---@return boolean Whether the input was handled
 function InventoryHandler:handle_inventory_right_click(inventory, slot_index, item)
-  -- If there's no item, can't do anything
+  -- If there's no item, nothing to do
   if not item then
     return false
   end
   
-  -- If the item has a use function, call it
-  if item.use then
-    local success = item:use(self.game_state)
-    if success then
-      -- Remove item if it was consumed
-      if item.consumed then
-        inventory:remove_item_at(slot_index)
-      end
-      
-      return true
-    end
-  end
-  
-  -- Show item info (if applicable)
+  -- Show item info if available
   if inventory.show_item_info then
     inventory:show_item_info(item)
     return true

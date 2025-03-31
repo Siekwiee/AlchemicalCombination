@@ -272,13 +272,13 @@ end
 ---@param item table The item to add
 ---@return boolean Whether the item was added successfully
 function UIInventory:add_item(item)
-    -- Find first empty slot
-    local slot = self:find_empty_slot()
-    if slot then
-        self.slots[slot] = item
-        return slot
+    -- Use the underlying inventory to add the item
+    local success, slot = self.inventory:add_item(item)
+    if success then
+        -- If successful, return true
+        return true
     end
-    return nil
+    return false
 end
 
 return UIInventory 
