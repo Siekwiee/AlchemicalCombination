@@ -143,7 +143,7 @@ function ShopDrawing:drawShopPanel()
     
     -- Draw gold amount
     love.graphics.setColor(self.colors.gold)
-    love.graphics.printf("Gold: " .. self.inventory:getFormattedGold(), x + 10, y + 40, width - 20, "left")
+    love.graphics.printf("Gold: " .. self.inventory.inventory:getFormattedGold(), x + 10, y + 40, width - 20, "left")
     
     -- Draw tabs for buy/sell
     self:drawShopTabs(x + 10, y + 70, width - 20)
@@ -312,7 +312,7 @@ end
 ---@param height number Height of the sell panel
 function ShopDrawing:drawSellItemsPanel(x, y, width, height)
     -- Get the player's inventory items that can be sold
-    local inventoryItems = self.inventory:getItems()
+    local inventoryItems = self.inventory:get_all_items()
     local sellableItems = {}
     
     -- Filter for sellable items and get their values

@@ -42,6 +42,10 @@ function PlayState:init()
     -- Initialize input manager first, so other components can use it
     self.input_manager = InputManager:new(self)
 
+    -- Add shop handler to input manager
+    local ShopHandler = require("src.userInput.handlers.ShopHandler")
+    self.input_manager.handlers.shop = ShopHandler:new(self)
+
     -- Initialize UI Manager
     local UIManager = require("src.userInterface.Manager")
     self.ui_manager = UIManager:new(self)
@@ -76,14 +80,8 @@ function PlayState:init()
     })
     
     -- Create shop UI
-    self.components.shop = {
-        instance = Shop:new(),
-        core = ShopCore:new(),
-        handlers = ShopHandlers:new(),
-        drawing = ShopDrawing:new()
-    }
-
-    self.components.shop.instance:setInventory(self.components.inventory)
+    self.components.shop = Shop:new()
+    self.components.shop:setInventory(self.components.inventory)
 
     -- Add some sample items for testing
     self:add_sample_items()
@@ -138,7 +136,7 @@ function PlayState:draw()
 
     -- Draw shop
     if self.components.shop then
-        self.components.shop.drawing:draw(self.components.shop.core, self.components.shop.handlers, self.components.inventory)
+        self.components.shop:draw()
     end
 end
 

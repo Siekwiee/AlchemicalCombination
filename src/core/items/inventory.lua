@@ -13,7 +13,8 @@ function Inventory:new(config)
     self.slots = {}
     self.max_slots = config.max_slots or 10
     self.item_manager = config.item_manager or ItemManager:new()
-    
+    self.formatted_gold = "0"
+
     -- Initialize empty slots
     for i = 1, self.max_slots do
         self.slots[i] = nil
@@ -77,6 +78,12 @@ end
 ---@return table A table of items indexed by slot
 function Inventory:get_all_items()
     return self.slots
+end
+
+--get formatted gold
+---@return string string formatted gold
+function Inventory:getFormattedGold()
+    return self.formatted_gold
 end
 
 ---Checks if the inventory is full

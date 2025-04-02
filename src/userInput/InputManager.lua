@@ -169,12 +169,17 @@ function InputManager:mousepressed(x, y, button)
   -- Process handlers in priority order
   local handled = false
   
-  -- Priority 1: UI handler (buttons, windows, etc.)
+  -- Priority 1: Shop handler (should be on top of everything)
+  if not handled and self.handlers.shop then
+      handled = self.handlers.shop:handle_mouse_pressed(x, y, button)
+  end
+
+  -- Priority 2: UI handler (buttons, windows, etc.)
   if not handled and self.handlers.ui then
       handled = self.handlers.ui:handle_mouse_pressed(x, y, button)
   end
   
-  -- Priority 2: Active inventory
+  -- Priority 3: Active inventory
   if not handled and self.handlers.inventory then
       local inventory = self:get_inventory()
       if inventory and inventory.visible then
@@ -182,7 +187,7 @@ function InputManager:mousepressed(x, y, button)
       end
   end
   
-  -- Priority 3: Active grid
+  -- Priority 4: Active grid
   if not handled and self.handlers.grid then
       local grid = self:get_grid()
       if grid and grid.visible then
@@ -190,7 +195,7 @@ function InputManager:mousepressed(x, y, button)
       end
   end
   
-  -- Priority 4: Game state handler
+  -- Priority 5: Game state handler
   if not handled and self.handlers.state then
       handled = self.handlers.state:handle_mouse_pressed(x, y, button)
   end
@@ -206,12 +211,17 @@ function InputManager:mousereleased(x, y, button)
   -- Process handlers in priority order
   local handled = false
   
-  -- Priority 1: UI handler (buttons, windows, etc.)
+  -- Priority 1: Shop handler
+  if not handled and self.handlers.shop then
+      handled = self.handlers.shop:handle_mouse_released(x, y, button)
+  end
+
+  -- Priority 2: UI handler
   if not handled and self.handlers.ui then
       handled = self.handlers.ui:handle_mouse_released(x, y, button)
   end
   
-  -- Priority 2: Active inventory
+  -- Priority 3: Active inventory
   if not handled and self.handlers.inventory then
       local inventory = self:get_inventory()
       if inventory and inventory.visible then
@@ -219,7 +229,7 @@ function InputManager:mousereleased(x, y, button)
       end
   end
   
-  -- Priority 3: Active grid
+  -- Priority 4: Active grid
   if not handled and self.handlers.grid then
       local grid = self:get_grid()
       if grid and grid.visible then
@@ -227,7 +237,7 @@ function InputManager:mousereleased(x, y, button)
       end
   end
   
-  -- Priority 4: Game state handler
+  -- Priority 5: Game state handler
   if not handled and self.handlers.state then
       handled = self.handlers.state:handle_mouse_released(x, y, button)
   end
@@ -241,17 +251,40 @@ end
 ---@param dx number Mouse X movement delta
 ---@param dy number Mouse Y movement delta
 function InputManager:mousemoved(x, y, dx, dy)
-  -- First handle UI through UI handler
-  if self.handlers.ui:handle_mouse_moved(x, y, dx, dy) then
-    return true
-  end
-  
-  -- Then handle game state specific input
-  if self.handlers.state and self.handlers.state:handle_mouse_moved(x, y, dx, dy) then
-    return true
-  end
-  
-  return false
+    local handled = false
+
+    -- Priority 1: Shop handler
+    if not handled and self.handlers.shop then
+        handled = self.handlers.shop:handle_mouse_moved(x, y, dx, dy)
+    end
+
+    -- Priority 2: UI handler
+    if not handled and self.handlers.ui then
+        handled = self.handlers.ui:handle_mouse_moved(x, y, dx, dy)
+    end
+
+    -- Priority 3: Active inventory
+    if not handled and self.handlers.inventory then
+        local inventory = self:get_inventory()
+        if inventory and inventory.visible then
+            handled = self.handlers.inventory:handle_mouse_moved(x, y, dx, dy)
+        end
+    end
+
+    -- Priority 4: Active grid
+    if not handled and self.handlers.grid then
+        local grid = self:get_grid()
+        if grid and grid.visible then
+            handled = self.handlers.grid:handle_mouse_moved(x, y, dx, dy)
+        end
+    end
+
+    -- Priority 5: Game state handler
+    if not handled and self.handlers.state then
+        handled = self.handlers.state:handle_mouse_moved(x, y, dx, dy)
+    end
+
+    return handled
 end
 
 ---Handles mouse wheel events
